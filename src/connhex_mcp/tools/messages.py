@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastmcp.server.dependencies import get_http_headers
 
 from connhex_mcp.dependencies import get_reader_service, get_things_service
@@ -8,6 +10,52 @@ from connhex_mcp.services.reader import (
     ReadFormat,
 )
 from connhex_mcp.utils.errors import ConnhexAPIError
+
+Limit = Annotated[int, "Max messages to return (upstream max is 1500)."]
+Offset = Annotated[int, "Pagination offset."]
+FromNs = Annotated[int | None, "Start time in nanoseconds (Unix epoch)."]
+ToNs = Annotated[int | None, "End time in nanoseconds (Unix epoch)."]
+Publisher = Annotated[str | None, "Publisher UUID filter."]
+Name = Annotated[
+    str | None,
+    "SenML name (metric URN) filter. Only applies to SenML-based formats"
+    ' ("messages", "params", "metrics"). Ignored for "infos".',
+]
+Format = Annotated[
+    ReadFormat,
+    "Which Connhex Message Policy (CMP) component to read. "
+    '"messages" (default): time-series sensor data collected during '
+    "operation (e.g. temperature, pressure). SenML format. Most common "
+    "format — use for actual measurements or telemetry. "
+    '"params": runtime-editable configuration parameters of the device '
+    "(e.g. operating mode, thresholds). SenML format. Use to inspect or "
+    "verify device settings. "
+    '"infos": static or rarely-changing device metadata sent at boot or '
+    "after firmware updates (e.g. serial number, firmware version, "
+    "hardware revision). JSON format (not SenML). Use to identify or "
+    "describe the device. name, ds, dsf, and dsv do not apply to this "
+    "format. "
+    '"metrics": internal device performance indicators (e.g. CPU usage, '
+    "RAM consumption, uptime). SenML format. Use for device health "
+    "monitoring and diagnostics.",
+]
+Ds = Annotated[
+    str | None,
+    'Decimation granularity, format "<number><s|m|h|d|w|M|y>" '
+    '(e.g. "5m", "1h", "1d"). When set, the upstream service buckets '
+    "messages and aggregates them with dsf. Only applies to SenML-based "
+    'formats ("messages", "params", "metrics").',
+]
+Dsf = Annotated[
+    DecimationFunc | None,
+    "Aggregation function for decimation: max, min, avg, sum, stddev, "
+    'variance. Defaults to "avg" upstream.',
+]
+Dsv = Annotated[
+    DecimationType | None,
+    'Decimation value type: "v" for numeric SenML values, "vb" for '
+    'boolean. Defaults to "v" upstream.',
+]
 
 
 async def _read_channel_messages(
@@ -42,42 +90,24 @@ async def _read_channel_messages(
 
 @mcp.tool()
 async def read_channel_messages(
-    channel_id: str,
-    limit: int = 100,
-    offset: int = 0,
-    from_ns: int | None = None,
-    to_ns: int | None = None,
-    publisher: str | None = None,
-    name: str | None = None,
-    format: ReadFormat = "messages",
-    ds: str | None = None,
-    dsf: DecimationFunc | None = None,
-    dsv: DecimationType | None = None,
+    channel_id: Annotated[str, "UUID of the channel."],
+    limit: Limit = 100,
+    offset: Offset = 0,
+    from_ns: FromNs = None,
+    to_ns: ToNs = None,
+    publisher: Publisher = None,
+    name: Name = None,
+    format: Format = "messages",
+    ds: Ds = None,
+    dsf: Dsf = None,
+    dsv: Dsv = None,
 ) -> dict:
-    """
-    Read messages from a Connhex IoT channel by its channel ID.
+    """Read messages from a Connhex IoT channel by its channel ID.
 
     Use this when you already have a channel ID. To go from a device's
     business identifier (serial, etc.) to messages, prefer
     `read_thing_messages`, which resolves the channel ID for you from a
     Connhex thing ID.
-
-    Args:
-        channel_id: UUID of the channel.
-        limit: Max messages to return (upstream max is 1500).
-        offset: Pagination offset.
-        from_ns: Start time in nanoseconds (Unix epoch).
-        to_ns: End time in nanoseconds (Unix epoch).
-        publisher: Optional publisher UUID filter.
-        name: Optional SenML `name` filter.
-        format: One of "messages", "params", "infos", "metrics".
-        ds: Decimation granularity, format `<number><s|m|h|d|w|M|y>`
-            (e.g. "5m", "1h", "1d"). When set, the upstream service buckets
-            messages and aggregates them with `dsf`.
-        dsf: Aggregation function for decimation: max, min, avg, sum,
-            stddev, variance. Defaults to "avg" upstream.
-        dsv: Decimation value type: "v" for numeric SenML values, "vb" for
-            boolean. Defaults to "v" upstream.
     """
     return await _read_channel_messages(
         channel_id=channel_id,
@@ -96,22 +126,23 @@ async def read_channel_messages(
 
 @mcp.tool()
 async def read_thing_messages(
-    thing_id: str,
-    limit: int = 100,
-    offset: int = 0,
-    from_ns: int | None = None,
-    to_ns: int | None = None,
-    publisher: str | None = None,
-    name: str | None = None,
-    format: ReadFormat = "messages",
-    ds: str | None = None,
-    dsf: DecimationFunc | None = None,
-    dsv: DecimationType | None = None,
+    thing_id: Annotated[
+        str, "Connhex thing UUID (the IoT thing/device/edge ID)."
+    ],
+    limit: Limit = 100,
+    offset: Offset = 0,
+    from_ns: FromNs = None,
+    to_ns: ToNs = None,
+    publisher: Publisher = None,
+    name: Name = None,
+    format: Format = "messages",
+    ds: Ds = None,
+    dsf: Dsf = None,
+    dsv: Dsv = None,
 ) -> dict:
-    """
-    Read messages for a Connhex IoT thing (device/edge), identified by its
-    Connhex thing ID. Resolves the thing's `event_channel_id` (or
-    `control_channel_id`) from its metadata and reads messages from it.
+    """Read messages for a Connhex IoT thing (device/edge), identified by
+    its Connhex thing ID. Resolves the thing's `event_channel_id` from its
+    metadata and reads messages from it.
 
     Resolving a user-facing identifier:
         If you only have a serial number or another business identifier,
@@ -121,22 +152,6 @@ async def read_thing_messages(
         field depends on the deployment). Read the
         `connhex://resources/schema` resource if you are unsure which field
         maps to the thing ID. Then pass that thing ID here.
-
-    Args:
-        thing_id: Connhex thing UUID (the IoT thing/device/edge ID).
-        channel: Which channel to read from — "event" (default; sensor
-            data and telemetry) or "control" (commands and control plane).
-        limit: Max messages to return (upstream max is 1500).
-        offset: Pagination offset.
-        from_ns: Start time in nanoseconds (Unix epoch).
-        to_ns: End time in nanoseconds (Unix epoch).
-        publisher: Optional publisher UUID filter.
-        name: Optional SenML `name` filter.
-        format: One of "messages", "params", "infos", "metrics".
-        ds: Decimation granularity, e.g. "1h" for hourly buckets. Combine
-            with `dsf` to get e.g. hourly averages.
-        dsf: Aggregation function: max, min, avg, sum, stddev, variance.
-        dsv: Decimation value type: "v" (numeric) or "vb" (boolean).
     """
     headers = get_http_headers() or {}
     thing = await get_things_service().get(thing_id, headers)

@@ -7,13 +7,13 @@ from connhex_mcp.dependencies import (
     get_resources_service,
 )
 from connhex_mcp.mcp_instance import mcp
+from connhex_mcp.resources.schemas import SCHEMA_DESCRIPTION
 from connhex_mcp.services.resources import ResourcesService
 from connhex_mcp.utils.jsonapi import flatten_response
 
 _SCHEMA_HINT = (
-    "\nSchema reference: read the `connhex://resources/schema` resource "
-    "(or `connhex://manufacturing/schema` for manufacturing) to discover "
-    "valid resource types, attributes, and relationships before calling.\n"
+    "\nCall the `get_schema` tool first to discover valid resource types, "
+    "attributes, and relationships.\n"
 )
 
 LIST_DOC = f"""
@@ -246,6 +246,15 @@ def _register_jsonapi_tools(
     mcp.tool(name=name_for("create"), description=CREATE_DOC)(create_op)
     mcp.tool(name=name_for("update"), description=UPDATE_DOC)(update_op)
     mcp.tool(name=name_for("delete"), description=DELETE_DOC)(delete_op)
+
+
+@mcp.tool(description=SCHEMA_DESCRIPTION)
+async def get_schema() -> dict:
+    headers = get_http_headers() or {}
+    return {
+        "resources": await get_resources_service().get_schema(headers),
+        "manufacturing": await get_manufacturing_service().get_schema(headers),
+    }
 
 
 _RESOURCES_NAMES = {

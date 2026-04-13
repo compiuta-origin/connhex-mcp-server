@@ -1,0 +1,15 @@
+from fastmcp.server.dependencies import get_http_headers
+
+from connhex_mcp.dependencies import get_iam_service
+from connhex_mcp.mcp_instance import mcp
+
+
+@mcp.tool()
+async def whoami() -> dict:
+    """
+    Returns information about the currently authenticated user.
+    Use this to verify the connection and see user's identity.
+    """
+    headers = get_http_headers() or {}
+    iam_service = get_iam_service()
+    return await iam_service.whoami(headers)

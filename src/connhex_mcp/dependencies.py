@@ -6,6 +6,7 @@ from connhex_mcp.config import Settings
 from connhex_mcp.services.iam import IAMService
 from connhex_mcp.services.reader import ReaderService
 from connhex_mcp.services.resources import ResourcesService
+from connhex_mcp.services.rules_engine import RulesEngineService
 from connhex_mcp.services.things import ThingsService
 
 
@@ -47,3 +48,8 @@ def get_things_service() -> ThingsService:
 @lru_cache(maxsize=1)
 def get_reader_service() -> ReaderService:
     return ReaderService(get_connhex_client())
+
+
+@lru_cache(maxsize=1)
+def get_rules_engine_service() -> RulesEngineService:
+    return RulesEngineService(get_connhex_client())

@@ -73,14 +73,104 @@ uvx --refresh --from git+https://github.com/compiuta-origin/connhex-mcp-server c
 
 Then restart your MCP client.
 
+## Available Tools
+
+### IAM
+
+| Tool     | Description                                                |
+| -------- | ---------------------------------------------------------- |
+| `whoami` | Return information about the currently authenticated user. |
+
+### Resources (JSON:API)
+
+Generic CRUD over the Connhex resources service.
+
+| Tool              | Description                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `list_resources`  | List resources of a given type, with filtering, sorting, sparse fieldsets, and pagination.                         |
+| `get_resource`    | Get a specific resource by ID.                                                                                     |
+| `create_resource` | Create a new resource.                                                                                             |
+| `update_resource` | Partially update an existing resource.                                                                             |
+| `delete_resource` | Delete a resource (irreversible).                                                                                  |
+| `get_schema`      | Discover valid resource types, attributes, and relationships across both the resources and manufacturing services. |
+
+### Manufacturing (JSON:API)
+
+Same CRUD shape as Resources, against the manufacturing service.
+
+| Tool                            | Description                                     |
+| ------------------------------- | ----------------------------------------------- |
+| `list_manufacturing_resources`  | List manufacturing resources.                   |
+| `get_manufacturing_resource`    | Get a manufacturing resource by ID.             |
+| `create_manufacturing_resource` | Create a manufacturing resource.                |
+| `update_manufacturing_resource` | Partially update a manufacturing resource.      |
+| `delete_manufacturing_resource` | Delete a manufacturing resource (irreversible). |
+
+### Reader (IoT messages)
+
+Read messages from Connhex IoT channels. Supports the four CMP components (`messages`, `params`, `infos`, `metrics`) and decimation/aggregation for SenML formats.
+
+| Tool                    | Description                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| `read_channel_messages` | Read messages from a channel by its channel ID.                                                        |
+| `read_thing_messages`   | Read messages for a thing by its Connhex thing ID (resolves the channel ID from the thing's metadata). |
+
+### Rules Engine
+
+Manage rules and inspect triggered rule events.
+
+| Tool               | Description                                    |
+| ------------------ | ---------------------------------------------- |
+| `list_rules`       | List rules, with filtering and pagination.     |
+| `get_rule`         | Get a single rule by ID.                       |
+| `create_rule`      | Create a new rule.                             |
+| `update_rule`      | Partially update an existing rule.             |
+| `delete_rule`      | Delete a rule (irreversible).                  |
+| `list_rule_events` | List rule events (triggered rule occurrences). |
+
 ## Usage Examples
 
-Once the MCP server is connected, you can ask your AI assistant things like:
+**Identity**
 
 - "Who am I logged in as?"
-- "List all my resources of type `<type>`"
-- "Show me the last 10 messages from thing `<thing-id>`"
-- "Read messages from channel `<channel-id>` between yesterday and today"
+
+**Discover the data model**
+
+- "What resource types are available in this Connhex instance?"
+- "What attributes does the `devices` resource type have?"
+
+**Browse and search resources**
+
+- "List all my devices."
+- "Find devices whose serial starts with `ABC`."
+- "Show me plants created in the last week."
+- "Get device `<device-id>` and include its related site."
+- "List the 50 most recently created devices, only showing `serial` and `name`."
+
+**Create / update / delete resources**
+
+- "Create a new installation called `Installation A`."
+- "Update device `<device-id>` to set its name to `Boiler 3`."
+- "Delete installation `<installation-id>`."
+
+**Manufacturing**
+
+- "List all manufacturing batches."
+
+**IoT messages (telemetry)**
+
+- "Show me the last 10 messages from thing `<thing-id>`."
+- "Read messages from channel `<channel-id>` between yesterday and today."
+- "Show me the daily max CPU usage (metrics) for device `<thing-id>` this week."
+- "Filter messages from channel `<channel-id>` to only the `temperature` SenML name."
+
+**Rules Engine**
+
+- "List all enabled rules with severity `critical`."
+- "Show me rule `<rule-id>`."
+- "Disable rule `<rule-id>`."
+- "Show me all rule events from the last 24 hours."
+- "List events triggered by rule `<rule-id>` between `<from>` and `<to>`."
 
 ## Testing with MCP Inspector
 

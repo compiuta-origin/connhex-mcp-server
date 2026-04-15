@@ -63,6 +63,16 @@ By default the server uses `stdio`. You can select a different transport by appe
 
 Available transports: `stdio`, `http`, `sse`, `streamable-http`.
 
+## Updating
+
+`uvx` caches the built environment on first run and does **not** re-fetch the git repo on subsequent invocations, so updates to this server are not picked up automatically. To pull the latest version, run:
+
+```bash
+uvx --refresh --from git+https://github.com/compiuta-origin/connhex-mcp-server connhex-mcp
+```
+
+Then restart your MCP client.
+
 ## Usage Examples
 
 Once the MCP server is connected, you can ask your AI assistant things like:

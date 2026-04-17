@@ -7,9 +7,9 @@ class ThingsService:
 
     async def get(self, thing_id: str, headers: dict) -> dict:
         """
-        Fetch a thing by its Connhex ID.
+        Fetch a connectable by its Connhex ID.
 
-        Returns the full thing object including `metadata`, which contains
+        Returns the full connectable object including `metadata`, which contains
         `event_channel_id` and `control_channel_id` for IoT devices/edges.
         """
         resp = await self.client.request(

@@ -18,8 +18,8 @@ class ReaderService:
         *,
         limit: int = 100,
         offset: int = 0,
-        from_ns: int | None = None,
-        to_ns: int | None = None,
+        from_s: float | None = None,
+        to_s: float | None = None,
         publisher: str | None = None,
         name: str | None = None,
         format: ReadFormat = "messages",
@@ -38,10 +38,10 @@ class ReaderService:
             "offset": offset,
             "format": format,
         }
-        if from_ns is not None:
-            params["from"] = from_ns
-        if to_ns is not None:
-            params["to"] = to_ns
+        if from_s is not None:
+            params["from"] = from_s
+        if to_s is not None:
+            params["to"] = to_s
         if publisher is not None:
             params["publisher"] = publisher
         if name is not None:

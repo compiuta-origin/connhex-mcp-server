@@ -13,8 +13,16 @@ from connhex_mcp.utils.errors import ConnhexAPIError
 
 Limit = Annotated[int, "Max messages to return (upstream max is 1500)."]
 Offset = Annotated[int, "Pagination offset."]
-FromNs = Annotated[int | None, "Start time in nanoseconds (Unix epoch)."]
-ToNs = Annotated[int | None, "End time in nanoseconds (Unix epoch)."]
+FromS = Annotated[
+    float | None,
+    "Start time in Unix epoch seconds. The integer part represents whole seconds; "
+    "the fractional part provides sub-second precision (e.g. 1744243200.183767).",
+]
+ToS = Annotated[
+    float | None,
+    "End time in Unix epoch seconds. The integer part represents whole seconds; "
+    "the fractional part provides sub-second precision (e.g. 1744243200.183767).",
+]
 Publisher = Annotated[str | None, "Publisher UUID filter."]
 Name = Annotated[
     str | None,
@@ -62,8 +70,8 @@ async def _read_channel_messages(
     channel_id: str,
     limit: int,
     offset: int,
-    from_ns: int | None,
-    to_ns: int | None,
+    from_s: float | None,
+    to_s: float | None,
     publisher: str | None,
     name: str | None,
     format: ReadFormat,
@@ -77,8 +85,8 @@ async def _read_channel_messages(
         headers=headers,
         limit=limit,
         offset=offset,
-        from_ns=from_ns,
-        to_ns=to_ns,
+        from_s=from_s,
+        to_s=to_s,
         publisher=publisher,
         name=name,
         format=format,
@@ -93,8 +101,8 @@ async def read_channel_messages(
     channel_id: Annotated[str, "UUID of the channel."],
     limit: Limit = 100,
     offset: Offset = 0,
-    from_ns: FromNs = None,
-    to_ns: ToNs = None,
+    from_s: FromS = None,
+    to_s: ToS = None,
     publisher: Publisher = None,
     name: Name = None,
     format: Format = "messages",
@@ -113,8 +121,8 @@ async def read_channel_messages(
         channel_id=channel_id,
         limit=limit,
         offset=offset,
-        from_ns=from_ns,
-        to_ns=to_ns,
+        from_s=from_s,
+        to_s=to_s,
         publisher=publisher,
         name=name,
         format=format,
@@ -131,8 +139,8 @@ async def read_thing_messages(
     ],
     limit: Limit = 100,
     offset: Offset = 0,
-    from_ns: FromNs = None,
-    to_ns: ToNs = None,
+    from_s: FromS = None,
+    to_s: ToS = None,
     publisher: Publisher = None,
     name: Name = None,
     format: Format = "messages",
@@ -172,8 +180,8 @@ async def read_thing_messages(
         channel_id=channel_id,
         limit=limit,
         offset=offset,
-        from_ns=from_ns,
-        to_ns=to_ns,
+        from_s=from_s,
+        to_s=to_s,
         publisher=publisher,
         name=name,
         format=format,

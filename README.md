@@ -7,7 +7,8 @@ An MCP server that exposes [Connhex](https://connhex.com) APIs as tools.
 ### Prerequisites
 
 - Python 3.11+
-- A Connhex account with access to your instance
+- [uvx](https://docs.astral.sh/uv/getting-started/installation/)
+- A Connhex account with access to the target instance
 
 ### Configure your MCP client
 
@@ -37,7 +38,7 @@ Add the server to your MCP client configuration.
 
 ### Authentication
 
-The server requires `CONNHEX_INSTANCE_URL` pointing to your Connhex instance.
+The server requires `CONNHEX_INSTANCE_URL` set to the base URL of the Connhex instance you want to connect to.
 
 Authentication is configured via `CONNHEX_AUTH_TYPE` (defaults to `credentials`):
 
@@ -110,10 +111,10 @@ Same CRUD shape as Resources, against the manufacturing service.
 
 Read messages from Connhex IoT channels. Supports the four CMP components (`messages`, `params`, `infos`, `metrics`) and decimation/aggregation for SenML formats.
 
-| Tool                    | Description                                                                                            |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| `read_channel_messages` | Read messages from a channel by its channel ID.                                                        |
-| `read_thing_messages`   | Read messages for a thing by its Connhex thing ID (resolves the channel ID from the thing's metadata). |
+| Tool                        | Description                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `read_channel_messages`     | Read messages from a channel by its channel ID.                                                                          |
+| `read_connectable_messages` | Read messages for a connectable by its Connhex connectable ID (resolves the channel ID from the connectable's metadata). |
 
 ### Rules Engine
 
@@ -159,9 +160,9 @@ Manage rules and inspect triggered rule events.
 
 **IoT messages (telemetry)**
 
-- "Show me the last 10 messages from thing `<thing-id>`."
+- "Show me the last 10 messages from connectalbe `<connhex-id>`."
 - "Read messages from channel `<channel-id>` between yesterday and today."
-- "Show me the daily max CPU usage (metrics) for device `<thing-id>` this week."
+- "Show me the daily max CPU usage (metrics) for device `<connhex-id>` this week."
 - "Filter messages from channel `<channel-id>` to only the `temperature` SenML name."
 
 **Rules Engine**

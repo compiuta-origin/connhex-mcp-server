@@ -13,3 +13,12 @@ class IAMService:
             base="accounts",
         )
         return resp.json()
+
+    async def get_identity_schemas(self, headers: dict) -> list:
+        resp = await self.client.request(
+            "GET",
+            "/auth/schemas",
+            headers,
+            base="accounts",
+        )
+        return resp.json()

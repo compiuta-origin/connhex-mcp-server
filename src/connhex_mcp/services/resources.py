@@ -1,10 +1,28 @@
 import time
+from typing import Generic, TypeVar
 
 from connhex_mcp.client import ConnhexClient
 from connhex_mcp.utils.jsonapi import build_filter_params
+from connhex_mcp.utils.schemas import ConnhexBaseModel
 
 _SCHEMA_TTL_SECONDS = 7 * 24 * 3600
 _DEFAULT_HEADERS = {"Accept": "application/vnd.api+json"}
+T = TypeVar("T")
+
+
+class Resource(ConnhexBaseModel):
+    """A flattened JSON:API resource. All attributes are hoisted to top level."""
+
+    id: str
+    type: str
+
+
+class ListResponse(ConnhexBaseModel, Generic[T]):
+    """Wrapper for paginated JSON:API list responses (after flatten_response)."""
+
+    data: list[T]
+    total: int | None = None
+    has_next: bool
 
 
 class ResourcesService:

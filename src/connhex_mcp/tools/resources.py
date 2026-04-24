@@ -8,7 +8,11 @@ from connhex_mcp.dependencies import (
 )
 from connhex_mcp.mcp_instance import mcp
 from connhex_mcp.resources.schemas import SCHEMA_DESCRIPTION
-from connhex_mcp.services.resources import ResourcesService
+from connhex_mcp.services.resources import (
+    ListResponse,
+    Resource,
+    ResourcesService,
+)
 from connhex_mcp.utils.jsonapi import flatten_response
 
 _SCHEMA_HINT = (
@@ -183,8 +187,8 @@ def _register_jsonapi_tools(
         fields: dict | None = None,
         page_limit: int = 25,
         page_offset: int = 0,
-    ) -> dict:
-        return await _list_resources(
+    ) -> ListResponse[Resource]:
+        result = await _list_resources(
             service=service_getter(),
             resource_type=resource_type,
             filter=filter,
@@ -194,42 +198,46 @@ def _register_jsonapi_tools(
             page_limit=page_limit,
             page_offset=page_offset,
         )
+        return ListResponse[Resource].model_validate(result)
 
     async def get_op(
         resource_type: str,
         resource_id: str,
         include: str | None = None,
-    ) -> dict:
-        return await _get_resource(
+    ) -> Resource:
+        result = await _get_resource(
             service=service_getter(),
             resource_type=resource_type,
             resource_id=resource_id,
             include=include,
         )
+        return Resource.model_validate(result["data"])
 
     async def create_op(
         resource_type: str,
         attributes: dict,
         relationships: dict | None = None,
-    ) -> dict:
-        return await _create_resource(
+    ) -> Resource:
+        result = await _create_resource(
             service=service_getter(),
             resource_type=resource_type,
             attributes=attributes,
             relationships=relationships,
         )
+        return Resource.model_validate(result["data"])
 
     async def update_op(
         resource_type: str,
         resource_id: str,
         attributes: dict,
-    ) -> dict:
-        return await _update_resource(
+    ) -> Resource:
+        result = await _update_resource(
             service=service_getter(),
             resource_type=resource_type,
             resource_id=resource_id,
             attributes=attributes,
         )
+        return Resource.model_validate(result["data"])
 
     async def delete_op(
         resource_type: str,

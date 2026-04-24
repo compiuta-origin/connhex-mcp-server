@@ -1,8 +1,9 @@
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from connhex_mcp.client import ConnhexClient
+from connhex_mcp.utils.schemas import ConnhexBaseModel
 
 RuleSeverity = Literal["info", "warning", "critical"]
 RuleStatus = Literal["active", "inactive"]
@@ -18,7 +19,7 @@ RuleSort = Literal[
 ]
 
 
-class ActiveWindow(BaseModel):
+class ActiveWindow(ConnhexBaseModel):
     from_: str = Field(alias="from", description='HH:MM, e.g. "08:10".')
     to: str = Field(description='HH:MM, e.g. "13:15".')
     timezone: str = Field(description='IANA timezone, e.g. "Europe/Rome".')
@@ -26,7 +27,7 @@ class ActiveWindow(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-class ThresholdConditionParams(BaseModel):
+class ThresholdConditionParams(ConnhexBaseModel):
     metric: str = Field(description="Metric URN.")
     threshold: float
     comparisonOperator: ComparisonOperator
@@ -37,7 +38,7 @@ class ThresholdConditionParams(BaseModel):
     activeWindow: ActiveWindow | None = None
 
 
-class LastMessageOlderThanConditionParams(BaseModel):
+class LastMessageOlderThanConditionParams(ConnhexBaseModel):
     channelId: str
     durationSecs: int = Field(ge=0, le=86400)
     source: MessageSource | None = None
@@ -54,7 +55,7 @@ class LastMessageOlderThanConditionParams(BaseModel):
     activeWindow: ActiveWindow | None = None
 
 
-class DeltaConditionParams(BaseModel):
+class DeltaConditionParams(ConnhexBaseModel):
     metric: str = Field(description="Metric URN.")
     delta: float
     comparisonOperator: ComparisonOperator
@@ -65,17 +66,17 @@ class DeltaConditionParams(BaseModel):
     activeWindow: ActiveWindow | None = None
 
 
-class ThresholdCondition(BaseModel):
+class ThresholdCondition(ConnhexBaseModel):
     type: Literal["threshold"]
     params: ThresholdConditionParams
 
 
-class LastMessageOlderThanCondition(BaseModel):
+class LastMessageOlderThanCondition(ConnhexBaseModel):
     type: Literal["lastMessageOlderThan"]
     params: LastMessageOlderThanConditionParams
 
 
-class DeltaCondition(BaseModel):
+class DeltaCondition(ConnhexBaseModel):
     type: Literal["delta"]
     params: DeltaConditionParams
 
@@ -86,7 +87,7 @@ Condition = Annotated[
 ]
 
 
-class NotificationMessage(BaseModel):
+class NotificationMessage(ConnhexBaseModel):
     policy: NotificationPolicy = Field(
         description=(
             "Defines when the notification should be dispatched:\n"
@@ -108,14 +109,75 @@ class NotificationMessage(BaseModel):
     )
 
 
-class Notification(BaseModel):
+class Notification(ConnhexBaseModel):
     messages: list[NotificationMessage]
 
 
-class Tag(BaseModel):
+class Tag(ConnhexBaseModel):
     label: str = Field(description='Tag key, e.g. "deviceID".')
     labelValue: str
     metadata: dict | None = None
+
+
+class ReadConditionDto(ConnhexBaseModel):
+    id: str
+    type: Literal["threshold", "lastMessageOlderThan", "delta"]
+    status: RuleStatus | None = None
+    params: dict
+    createdAt: str | None = None
+    updatedAt: str | None = None
+    deletedAt: str | None = None
+
+
+class ReadTagDto(ConnhexBaseModel):
+    id: str
+    label: str
+    labelValue: str
+    metadata: dict | None = None
+    createdAt: str | None = None
+    updatedAt: str | None = None
+    deletedAt: str | None = None
+
+
+class Rule(ConnhexBaseModel):
+    id: str
+    name: str
+    status: RuleStatus | None = None
+    severity: RuleSeverity | None = None
+    description: str | None = None
+    processable: Processable | None = None
+    conditions: list[ReadConditionDto]
+    tags: list[ReadTagDto]
+    notification: Notification
+    createdAt: str | None = None
+    updatedAt: str | None = None
+    deletedAt: str | None = None
+
+
+class PagedRules(ConnhexBaseModel):
+    results: list[Rule]
+    total: int
+
+
+class ReadConditionEventDto(ConnhexBaseModel):
+    id: str
+    conditionId: str
+    conditionSnapshot: dict
+    status: RuleStatus | None = None
+    createdAt: str | None = None
+
+
+class RuleEvent(ConnhexBaseModel):
+    id: str
+    ruleId: str
+    status: RuleStatus | None = None
+    conditionsEvents: list[ReadConditionEventDto]
+    createdAt: str | None = None
+
+
+class PagedRuleEvents(ConnhexBaseModel):
+    results: list[RuleEvent]
+    total: int
 
 
 class RulesEngineService:

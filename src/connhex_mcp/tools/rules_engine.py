@@ -7,7 +7,10 @@ from connhex_mcp.mcp_instance import mcp
 from connhex_mcp.services.rules_engine import (
     Condition,
     Notification,
+    PagedRuleEvents,
+    PagedRules,
     Processable,
+    Rule,
     RuleSeverity,
     RuleSort,
     RuleStatus,
@@ -31,13 +34,10 @@ async def list_rules(
     page: Annotated[int, "Page number (0-indexed)."] = 0,
     page_size: Annotated[int, "Results per page (default 1000)."] = 1000,
     sort: RuleSort = "createdAt:desc",
-) -> dict:
-    """List rules from the Connhex Rules Engine.
-
-    Returns `{results: [...], total: N}`.
-    """
+) -> PagedRules:
+    """List rules from the Connhex Rules Engine."""
     headers = get_http_headers() or {}
-    return await get_rules_engine_service().list_rules(
+    data = await get_rules_engine_service().list_rules(
         headers,
         ids=ids,
         tag_labels=tag_labels,
@@ -48,13 +48,15 @@ async def list_rules(
         page_size=page_size,
         sort=sort,
     )
+    return PagedRules.model_validate(data)
 
 
 @mcp.tool()
-async def get_rule(rule_id: Annotated[str, "Rule ID."]) -> dict:
+async def get_rule(rule_id: Annotated[str, "Rule ID."]) -> Rule:
     """Get a single rule by ID from the Connhex Rules Engine."""
     headers = get_http_headers() or {}
-    return await get_rules_engine_service().get_rule(rule_id, headers)
+    data = await get_rules_engine_service().get_rule(rule_id, headers)
+    return Rule.model_validate(data)
 
 
 @mcp.tool()
@@ -72,7 +74,7 @@ async def create_rule(
         'Whether the rule is processed (default "enabled").',
     ] = None,
     tags: list[Tag] | None = None,
-) -> dict:
+) -> Rule:
     """Create a new rule in the Connhex Rules Engine."""
     headers = get_http_headers() or {}
     payload: dict = {
@@ -89,7 +91,8 @@ async def create_rule(
     if tags is not None:
         payload["tags"] = [_dump(t) for t in tags]
 
-    return await get_rules_engine_service().create_rule(payload, headers)
+    data = await get_rules_engine_service().create_rule(payload, headers)
+    return Rule.model_validate(data)
 
 
 @mcp.tool()
@@ -105,7 +108,7 @@ async def update_rule(
     description: Annotated[str | None, "New description."] = None,
     processable: Processable | None = None,
     tags: list[Tag] | None = None,
-) -> dict:
+) -> Rule:
     """Partially update a rule. Only the fields provided are changed."""
     headers = get_http_headers() or {}
     payload: dict = {}
@@ -124,9 +127,10 @@ async def update_rule(
     if tags is not None:
         payload["tags"] = [_dump(t) for t in tags]
 
-    return await get_rules_engine_service().update_rule(
+    data = await get_rules_engine_service().update_rule(
         rule_id, payload, headers
     )
+    return Rule.model_validate(data)
 
 
 @mcp.tool()
@@ -152,13 +156,10 @@ async def list_rule_events(
     page: Annotated[int, "Page number (0-indexed)."] = 0,
     page_size: Annotated[int, "Results per page (default 1000)."] = 1000,
     sort: RuleSort = "createdAt:desc",
-) -> dict:
-    """List rule events (triggered rule occurrences).
-
-    Returns `{results: [...], total: N}`.
-    """
+) -> PagedRuleEvents:
+    """List rule events (triggered rule occurrences)."""
     headers = get_http_headers() or {}
-    return await get_rules_engine_service().list_rule_events(
+    data = await get_rules_engine_service().list_rule_events(
         headers,
         rule_ids=rule_ids,
         from_date=from_date,
@@ -168,3 +169,4 @@ async def list_rule_events(
         page_size=page_size,
         sort=sort,
     )
+    return PagedRuleEvents.model_validate(data)

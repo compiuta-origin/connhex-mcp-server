@@ -1,3 +1,5 @@
+from fastmcp.server.dependencies import get_access_token
+
 from connhex_mcp.auth.credentials import CredentialsProvider
 from connhex_mcp.auth.session import (
     extract_bearer_from_headers,
@@ -30,6 +32,14 @@ class AuthResolver:
         bearer = await extract_bearer_from_headers(headers)
         if bearer:
             return {"Authorization": bearer}
+
+        # OAuth access token injected by fastmcp after token validation
+        try:
+            access_token = get_access_token()
+            if access_token and access_token.token:
+                return {"Authorization": f"Bearer {access_token.token}"}
+        except Exception:
+            pass
 
         # Cookie from transport headers
         headers_lower = {k.lower(): v for k, v in headers.items()}

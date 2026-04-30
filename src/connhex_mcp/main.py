@@ -36,6 +36,9 @@ def main():
     settings = get_settings()
     log_config = setup_logging(settings.log_config_path)
 
+    if settings.disabled_tools:
+        mcp.disable(names=set(settings.disabled_tools), components={"tool"})
+
     if args.mode == "remote":
         assert settings.public_url, (
             "CONNHEX_PUBLIC_URL must be set when running in remote mode"

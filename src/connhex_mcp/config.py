@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import Field, HttpUrl
+from pydantic import Field, HttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -34,6 +34,16 @@ class Settings(BaseSettings):
     log_config_path: str | None = Field(
         default=None, description="Path to logging config JSON"
     )
+    disabled_tools: list[str] | None = Field(
+        default=None, description="Tool names to hide from the LLM"
+    )
+
+    @field_validator("disabled_tools", mode="before")
+    @classmethod
+    def parse_comma_separated(cls, v: object) -> object:
+        if isinstance(v, str):
+            return [t.strip() for t in v.split(",") if t.strip()]
+        return v
 
     @property
     def accounts_url(self) -> str:

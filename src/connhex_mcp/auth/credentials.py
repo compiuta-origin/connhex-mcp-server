@@ -1,6 +1,7 @@
-import httpx
 import asyncio
 from dataclasses import dataclass, field
+
+from connhex_mcp.auth.kratos import kratos_password_login
 
 
 @dataclass
@@ -28,28 +29,6 @@ class CredentialsProvider:
             return self._token
 
     async def _login(self) -> str:
-        async with httpx.AsyncClient() as client:
-            # Step 1: Create login flow
-            flow_resp = await client.get(
-                f"{self.accounts_url}/auth/self-service/login/api",
-                headers={"Accept": "application/json"},
-            )
-            flow_resp.raise_for_status()
-            action_url = flow_resp.json()["ui"]["action"]
-
-            # Step 2: Submit credentials
-            login_resp = await client.post(
-                action_url,
-                headers={
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "identifier": self.username,
-                    "password": self.password,
-                    "method": "password",
-                },
-            )
-            login_resp.raise_for_status()
-            token = login_resp.json()["session_token"]
-            return token
+        return await kratos_password_login(
+            self.accounts_url, self.username, self.password
+        )

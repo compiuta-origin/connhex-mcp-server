@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     bearer_token: str | None = Field(
         default=None, description="For auth_type=token"
     )
+    public_url: str | None = Field(
+        default=None,
+        description=("Public base URL, required for remote mode"),
+    )
+    log_config_path: str | None = Field(
+        default=None, description="Path to logging config JSON"
+    )
 
     @property
     def accounts_url(self) -> str:

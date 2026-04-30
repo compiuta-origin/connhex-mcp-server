@@ -10,10 +10,10 @@ _DEFAULT_CONFIG = {
         }
     },
     "handlers": {
-        "stdout": {
+        "stderr": {
             "class": "logging.StreamHandler",
             "formatter": "default",
-            "stream": "ext://sys.stdout",
+            "stream": "ext://sys.stderr",
         }
     },
     "loggers": {
@@ -27,10 +27,11 @@ _DEFAULT_CONFIG = {
         "httpcore": {"level": "WARNING", "propagate": True},
         "httpx": {"level": "WARNING", "propagate": True},
         "urllib3": {"level": "WARNING", "propagate": True},
+        "python_multipart.multipart": {"level": "WARNING", "propagate": True},
     },
     "root": {
         "level": "DEBUG",
-        "handlers": ["stdout"],
+        "handlers": ["stderr"],
     },
 }
 

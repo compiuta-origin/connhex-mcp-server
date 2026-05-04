@@ -32,8 +32,8 @@ class ThresholdConditionParams(ConnhexBaseModel):
     threshold: float
     comparisonOperator: ComparisonOperator
     durationSecs: int = Field(ge=0, le=86400)
+    channelId: str
     source: MessageSource | None = None
-    channelId: str | None = None
     unit: str | None = None
     activeWindow: ActiveWindow | None = None
 
@@ -58,10 +58,10 @@ class LastMessageOlderThanConditionParams(ConnhexBaseModel):
 class DeltaConditionParams(ConnhexBaseModel):
     metric: str = Field(description="Metric URN.")
     delta: float
+    channelId: str
     comparisonOperator: ComparisonOperator
     durationSecs: int = Field(ge=0, le=86400)
     source: MessageSource | None = None
-    channelId: str | None = None
     unit: str | None = None
     activeWindow: ActiveWindow | None = None
 

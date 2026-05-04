@@ -111,10 +111,34 @@ Same CRUD shape as Resources, against the manufacturing service.
 
 Read messages from Connhex IoT channels. Supports the four CMP components (`messages`, `params`, `infos`, `metrics`) and decimation/aggregation for SenML formats.
 
-| Tool                        | Description                                                                                                              |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `read_channel_messages`     | Read messages from a channel by its channel ID.                                                                          |
-| `read_connectable_messages` | Read messages for a connectable by its Connhex connectable ID (resolves the channel ID from the connectable's metadata). |
+| Tool                    | Description                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `read_channel_messages` | Read messages from a channel by its channel ID.                                                                    |
+| `read_thing_messages`   | Read messages for a thing (device/edge) by its thing ID (resolves the channel ID from the thing's metadata).       |
+
+### Things
+
+Manage IoT things (devices and edges) and inspect their connectivity.
+
+| Tool                        | Description                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| `get_thing`                 | Get a single thing by ID, including its typed metadata (channels, device type...). |
+| `list_things`               | List things with optional name filter and pagination.                              |
+| `get_things_status`         | Get current connectivity status for a batch of things by their IDs.               |
+| `get_things_status_summary` | Fleet-wide connectivity summary: online, offline, never connected, active last hour. |
+| `get_things_flapping`       | List devices with an excessive number of reconnections within a time window.       |
+| `get_thing_uptime`          | Connect/disconnect timeline and total uptime for a single thing in a time range.   |
+| `get_thing_channels`        | List the channels connected to a specific thing.                                   |
+
+### Models
+
+Manage device models and browse the things assigned to them.
+
+| Tool               | Description                                          |
+| ------------------ | ---------------------------------------------------- |
+| `get_model`        | Get a single device model by ID.                     |
+| `list_models`      | List models with optional name, tag, and tenant filters. |
+| `get_model_things` | List all things assigned to a specific device model. |
 
 ### Rules Engine
 
@@ -160,10 +184,25 @@ Manage rules and inspect triggered rule events.
 
 **IoT messages (telemetry)**
 
-- "Show me the last 10 messages from connectalbe `<connhex-id>`."
+- "Show me the last 10 messages from thing `<thing-id>`."
 - "Read messages from channel `<channel-id>` between yesterday and today."
 - "Show me the daily max CPU usage (metrics) for device `<connhex-id>` this week."
 - "Filter messages from channel `<channel-id>` to only the `temperature` SenML name."
+
+**Things**
+
+- "List all things in this instance."
+- "Get thing `<thing-id>` and show me its event and control channel IDs."
+- "How many devices are currently online?"
+- "Are there any devices that are reconnecting excessively?"
+- "Show me the connectivity timeline for device `<thing-id>` over the last 7 days."
+- "What channels is thing `<thing-id>` connected to?"
+
+**Models**
+
+- "List all device models."
+- "Show me all things assigned to model `<model-id>`."
+- "Which model does thing `<thing-id>` use?"
 
 **Rules Engine**
 

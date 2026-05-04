@@ -4,6 +4,7 @@ from connhex_mcp.auth.resolver import AuthResolver
 from connhex_mcp.client import ConnhexClient
 from connhex_mcp.config import Settings
 from connhex_mcp.services.iam import IAMService
+from connhex_mcp.services.models import ModelsService
 from connhex_mcp.services.reader import ReaderService
 from connhex_mcp.services.resources import ResourcesService
 from connhex_mcp.services.rules_engine import RulesEngineService
@@ -48,6 +49,11 @@ def get_things_service() -> ThingsService:
 @lru_cache(maxsize=1)
 def get_reader_service() -> ReaderService:
     return ReaderService(get_connhex_client())
+
+
+@lru_cache(maxsize=1)
+def get_models_service() -> ModelsService:
+    return ModelsService(get_connhex_client())
 
 
 @lru_cache(maxsize=1)

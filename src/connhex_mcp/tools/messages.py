@@ -114,8 +114,8 @@ async def read_channel_messages(
 
     Use this when you already have a channel ID. To go from a device's
     business identifier (serial, etc.) to messages, prefer
-    `read_connectable_messages`, which resolves the channel ID for you from a
-    Connhex connectable ID.
+    `read_thing_messages`, which resolves the channel ID for you from a
+    thing ID.
     """
     return await _read_channel_messages(
         channel_id=channel_id,
@@ -133,12 +133,12 @@ async def read_channel_messages(
 
 
 @mcp.tool()
-async def read_connectable_messages(
-    connhex_id: Annotated[
+async def read_thing_messages(
+    thing_id: Annotated[
         str,
-        "Connectable Connhex ID (UUID). "
+        "Thing ID (UUID). "
         "This is the value of the Connhex ID field on the resource "
-        "or manufacturing record — not the resource's own id",
+        "or manufacturing record — not the resource's own id.",
     ],
     limit: Limit = 100,
     offset: Offset = 0,
@@ -151,18 +151,18 @@ async def read_connectable_messages(
     dsf: Dsf = None,
     dsv: Dsv = None,
 ) -> dict:
-    """Read messages for a Connhex connectable (device/edge), identified by
-    its Connhex ID. Resolves the connectable's `event_channel_id` from its
-    metadata and reads messages from it.
+    """Read messages for a Connhex thing (device/edge), identified by its
+    thing ID. Resolves the thing's `event_channel_id` from its metadata and
+    reads messages from it.
 
     Resolving a user-facing identifier:
         If you only have a serial number or another business identifier,
         first use list_resources / list_manufacturing_resources to find the record,
         then look for a field named connhexId (or similar) —
-        that value is the connhex_id to pass here, not the record's own id.
+        that value is the thing_id to pass here, not the record's own id.
     """
     headers = get_http_headers() or {}
-    thing = await get_things_service().get(connhex_id, headers)
+    thing = await get_things_service().get(thing_id, headers)
 
     metadata = thing.get("metadata") or {}
     channel_key = "event_channel_id"
@@ -171,7 +171,7 @@ async def read_connectable_messages(
         raise ConnhexAPIError(
             status=404,
             detail=(
-                f"Thing {connhex_id} has no '{channel_key}' in its metadata. "
+                f"Thing {thing_id} has no '{channel_key}' in its metadata. "
                 f"Available metadata keys: {sorted(metadata.keys())}"
             ),
         )

@@ -147,7 +147,7 @@ class Rule(ConnhexBaseModel):
     description: str | None = None
     processable: Processable | None = None
     conditions: list[ReadConditionDto]
-    tags: list[ReadTagDto]
+    tags: list[ReadTagDto] = []
     notification: Notification
     createdAt: str | None = None
     updatedAt: str | None = None

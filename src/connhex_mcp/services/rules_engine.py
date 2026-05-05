@@ -98,6 +98,10 @@ class NotificationMessage(ConnhexBaseModel):
         )
     )
     medium: NotificationMedium
+    muted: bool | None = Field(
+        default=None,
+        description="Defines whether the notification message is muted",
+    )
     text: str
     target: str | None = Field(
         default=None,

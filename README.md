@@ -111,34 +111,34 @@ Same CRUD shape as Resources, against the manufacturing service.
 
 Read messages from Connhex IoT channels. Supports the four CMP components (`messages`, `params`, `infos`, `metrics`) and decimation/aggregation for SenML formats.
 
-| Tool                    | Description                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `read_channel_messages` | Read messages from a channel by its channel ID.                                                                    |
-| `read_thing_messages`   | Read messages for a thing (device/edge) by its thing ID (resolves the channel ID from the thing's metadata).       |
+| Tool                    | Description                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `read_channel_messages` | Read messages from a channel by its channel ID.                                                              |
+| `read_thing_messages`   | Read messages for a thing (device/edge) by its thing ID (resolves the channel ID from the thing's metadata). |
 
 ### Things
 
 Manage IoT things (devices and edges) and inspect their connectivity.
 
-| Tool                        | Description                                                                        |
-| --------------------------- | ---------------------------------------------------------------------------------- |
-| `get_thing`                 | Get a single thing by ID, including its typed metadata (channels, device type...). |
-| `list_things`               | List things with optional name filter and pagination.                              |
-| `get_things_status`         | Get current connectivity status for a batch of things by their IDs.               |
+| Tool                        | Description                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| `get_thing`                 | Get a single thing by ID, including its typed metadata (channels, device type...).   |
+| `list_things`               | List things with optional name filter and pagination.                                |
+| `get_things_status`         | Get current connectivity status for a batch of things by their IDs.                  |
 | `get_things_status_summary` | Fleet-wide connectivity summary: online, offline, never connected, active last hour. |
-| `get_things_flapping`       | List devices with an excessive number of reconnections within a time window.       |
-| `get_thing_uptime`          | Connect/disconnect timeline and total uptime for a single thing in a time range.   |
-| `get_thing_channels`        | List the channels connected to a specific thing.                                   |
+| `get_things_flapping`       | List devices with an excessive number of reconnections within a time window.         |
+| `get_thing_uptime`          | Connect/disconnect timeline and total uptime for a single thing in a time range.     |
+| `get_thing_channels`        | List the channels connected to a specific thing.                                     |
 
 ### Models
 
 Manage device models and browse the things assigned to them.
 
-| Tool               | Description                                          |
-| ------------------ | ---------------------------------------------------- |
-| `get_model`        | Get a single device model by ID.                     |
+| Tool               | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `get_model`        | Get a single device model by ID.                         |
 | `list_models`      | List models with optional name, tag, and tenant filters. |
-| `get_model_things` | List all things assigned to a specific device model. |
+| `get_model_things` | List all things assigned to a specific device model.     |
 
 ### Rules Engine
 
@@ -256,3 +256,17 @@ Run tests and linting:
 uv run pytest
 uv run ruff check .
 ```
+
+## Privacy Policy
+
+The Connhex MCP Server acts as a proxy between AI clients and a Connhex instance. It does not collect, store, or process data on its own behalf.
+
+**Data handling:** All requests are forwarded exclusively to the Connhex instance URL configured by the operator (`CONNHEX_INSTANCE_URL`). No data is sent to any other third party.
+
+**Third-party services:** The server communicates only with the configured Connhex instance. No analytics, telemetry, or tracking services are used.
+
+**Contact:** For privacy-related inquiries, contact [info@compiuta.com](mailto:info@compiuta.com).
+
+- Full privacy policy: [https://connhex.com/legal/platform-privacy-notice](https://connhex.com/legal/platform-privacy-notice)
+- Terms and Conditions: [https://connhex.com/legal/terms-and-conditions](https://connhex.com/legal/terms-and-conditions)
+- Acceptable Use Policy: [https://connhex.com/legal/acceptable-use-policy](https://connhex.com/legal/acceptable-use-policy)

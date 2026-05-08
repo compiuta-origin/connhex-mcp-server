@@ -2,12 +2,19 @@ import argparse
 import importlib
 import pkgutil
 
+import uvicorn
+from fastmcp.server.server import Transport
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
+
 import connhex_mcp.resources
 import connhex_mcp.tools
 from connhex_mcp.auth.remote import ConnhexOAuthProvider
+from connhex_mcp.config import Settings
 from connhex_mcp.dependencies import get_settings
 from connhex_mcp.logging_setup import setup_logging
 from connhex_mcp.mcp_instance import mcp
+from connhex_mcp.middleware import OriginValidationMiddleware
 
 # Auto-discover and register all tools and resources
 for _pkg in (connhex_mcp.tools, connhex_mcp.resources):
@@ -17,7 +24,7 @@ for _pkg in (connhex_mcp.tools, connhex_mcp.resources):
 TRANSPORTS = ["stdio", "http", "sse", "streamable-http"]
 
 
-def main():
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Connhex MCP Server")
     parser.add_argument(
         "--transport",
@@ -29,10 +36,50 @@ def main():
         "--mode",
         choices=["local", "remote"],
         default="local",
-        help=("Server mode: local (stdio) or remote (streamable-http + OAuth)"),
+        help="Server mode: local (stdio) or remote (streamable-http + OAuth)",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def _run_remote(settings: Settings, log_config: dict) -> None:
+    assert settings.public_url, (
+        "CONNHEX_PUBLIC_URL must be set when running in remote mode"
+    )
+    mcp.auth = ConnhexOAuthProvider(settings)
+    http_app = mcp.http_app(
+        transport="streamable-http",
+        path="/",
+        middleware=[
+            Middleware(
+                OriginValidationMiddleware, allowed_origin=settings.public_url
+            ),
+            Middleware(
+                CORSMiddleware,
+                allow_origins=[settings.public_url],
+                allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+                allow_headers=[
+                    "mcp-protocol-version",
+                    "mcp-session-id",
+                    "Authorization",
+                    "Content-Type",
+                ],
+                expose_headers=["mcp-session-id"],
+            ),
+        ],
+    )
+    uvicorn.run(http_app, host="0.0.0.0", log_config=log_config)
+
+
+def _run_local(transport: Transport, log_config: dict) -> None:
+    http_transports = {"http", "sse", "streamable-http"}
+    if transport in http_transports:
+        mcp.run(transport=transport, uvicorn_config={"log_config": log_config})
+    else:
+        mcp.run(transport=transport)
+
+
+def main():
+    args = _parse_args()
     settings = get_settings()
     log_config = setup_logging(settings.log_config_path)
 
@@ -40,26 +87,9 @@ def main():
         mcp.disable(names=set(settings.disabled_tools), components={"tool"})
 
     if args.mode == "remote":
-        assert settings.public_url, (
-            "CONNHEX_PUBLIC_URL must be set when running in remote mode"
-        )
-
-        mcp.auth = ConnhexOAuthProvider(settings)
-        mcp.run(
-            transport="streamable-http",
-            host="0.0.0.0",
-            path="/",
-            uvicorn_config={"log_config": log_config},
-        )
+        _run_remote(settings, log_config)
     else:
-        http_transports = {"http", "sse", "streamable-http"}
-        if args.transport in http_transports:
-            mcp.run(
-                transport=args.transport,
-                uvicorn_config={"log_config": log_config},
-            )
-        else:
-            mcp.run(transport=args.transport)
+        _run_local(args.transport, log_config)
 
 
 if __name__ == "__main__":

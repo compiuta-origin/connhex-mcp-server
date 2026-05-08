@@ -1,6 +1,7 @@
 from typing import Callable
 
 from fastmcp.server.dependencies import get_http_headers
+from mcp.types import ToolAnnotations
 
 from connhex_mcp.dependencies import (
     get_manufacturing_service,
@@ -178,6 +179,7 @@ async def _delete_resource(
 def _register_jsonapi_tools(
     service_getter: Callable[[], ResourcesService],
     name_for: Callable[[str], str],
+    title_prefix: str,
 ) -> None:
     async def list_op(
         resource_type: str,
@@ -249,14 +251,49 @@ def _register_jsonapi_tools(
             resource_id=resource_id,
         )
 
-    mcp.tool(name=name_for("list"), description=LIST_DOC)(list_op)
-    mcp.tool(name=name_for("get"), description=GET_DOC)(get_op)
-    mcp.tool(name=name_for("create"), description=CREATE_DOC)(create_op)
-    mcp.tool(name=name_for("update"), description=UPDATE_DOC)(update_op)
-    mcp.tool(name=name_for("delete"), description=DELETE_DOC)(delete_op)
+    mcp.tool(
+        name=name_for("list"),
+        description=LIST_DOC,
+        title=f"List {title_prefix}s",
+        annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    )(list_op)
+    mcp.tool(
+        name=name_for("get"),
+        description=GET_DOC,
+        title=f"Get {title_prefix}",
+        annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    )(get_op)
+    mcp.tool(
+        name=name_for("create"),
+        description=CREATE_DOC,
+        title=f"Create {title_prefix}",
+        annotations=ToolAnnotations(
+            readOnlyHint=False, destructiveHint=False, openWorldHint=False
+        ),
+    )(create_op)
+    mcp.tool(
+        name=name_for("update"),
+        description=UPDATE_DOC,
+        title=f"Update {title_prefix}",
+        annotations=ToolAnnotations(
+            readOnlyHint=False, destructiveHint=False, openWorldHint=False
+        ),
+    )(update_op)
+    mcp.tool(
+        name=name_for("delete"),
+        description=DELETE_DOC,
+        title=f"Delete {title_prefix}",
+        annotations=ToolAnnotations(
+            readOnlyHint=False, destructiveHint=True, openWorldHint=False
+        ),
+    )(delete_op)
 
 
-@mcp.tool(description=SCHEMA_DESCRIPTION)
+@mcp.tool(
+    title="Get Service Schema",
+    description=SCHEMA_DESCRIPTION,
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_schema() -> dict:
     headers = get_http_headers() or {}
     return {
@@ -281,7 +318,11 @@ _MANUFACTURING_NAMES = {
     "delete": "delete_manufacturing_resource",
 }
 
-_register_jsonapi_tools(get_resources_service, _RESOURCES_NAMES.__getitem__)
 _register_jsonapi_tools(
-    get_manufacturing_service, _MANUFACTURING_NAMES.__getitem__
+    get_resources_service, _RESOURCES_NAMES.__getitem__, "Resource"
+)
+_register_jsonapi_tools(
+    get_manufacturing_service,
+    _MANUFACTURING_NAMES.__getitem__,
+    "Manufacturing Resource",
 )

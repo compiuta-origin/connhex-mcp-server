@@ -1,5 +1,7 @@
 from typing import Annotated
 
+from mcp.types import ToolAnnotations
+
 from fastmcp.server.dependencies import get_http_headers
 
 from connhex_mcp.dependencies import get_rules_engine_service
@@ -22,7 +24,10 @@ def _dump(model) -> dict:
     return model.model_dump(by_alias=True, exclude_none=True)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="List Rules",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def list_rules(
     ids: Annotated[list[str] | None, "Filter by specific rule IDs."] = None,
     tag_labels: Annotated[list[str] | None, "Filter by tag labels."] = None,
@@ -51,7 +56,10 @@ async def list_rules(
     return PagedRules.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Get Rule",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_rule(rule_id: Annotated[str, "Rule ID."]) -> Rule:
     """Get a single rule by ID from the Connhex Rules Engine."""
     headers = get_http_headers() or {}
@@ -59,7 +67,12 @@ async def get_rule(rule_id: Annotated[str, "Rule ID."]) -> Rule:
     return Rule.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Create Rule",
+    annotations=ToolAnnotations(
+        readOnlyHint=False, destructiveHint=False, openWorldHint=False
+    ),
+)
 async def create_rule(
     name: Annotated[str, "Human-readable rule name."],
     notification: Notification,
@@ -95,7 +108,12 @@ async def create_rule(
     return Rule.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Update Rule",
+    annotations=ToolAnnotations(
+        readOnlyHint=False, destructiveHint=False, openWorldHint=False
+    ),
+)
 async def update_rule(
     rule_id: Annotated[str, "Rule ID."],
     name: Annotated[str | None, "New name."] = None,
@@ -133,7 +151,12 @@ async def update_rule(
     return Rule.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Delete Rule",
+    annotations=ToolAnnotations(
+        readOnlyHint=False, destructiveHint=True, openWorldHint=False
+    ),
+)
 async def delete_rule(
     rule_id: Annotated[str, "Rule ID."],
 ) -> str:
@@ -143,7 +166,10 @@ async def delete_rule(
     return f"Rule {rule_id} deleted successfully."
 
 
-@mcp.tool()
+@mcp.tool(
+    title="List Rule Events",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def list_rule_events(
     rule_ids: Annotated[list[str] | None, "Filter by rule IDs."] = None,
     from_date: Annotated[

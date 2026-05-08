@@ -1,5 +1,7 @@
 from typing import Annotated
 
+from mcp.types import ToolAnnotations
+
 from fastmcp.server.dependencies import get_http_headers
 
 from connhex_mcp.dependencies import get_reader_service, get_things_service
@@ -96,7 +98,10 @@ async def _read_channel_messages(
     )
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Read Channel Messages",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def read_channel_messages(
     channel_id: Annotated[str, "UUID of the channel."],
     limit: Limit = 100,
@@ -132,7 +137,10 @@ async def read_channel_messages(
     )
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Read Thing Messages",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def read_thing_messages(
     thing_id: Annotated[
         str,

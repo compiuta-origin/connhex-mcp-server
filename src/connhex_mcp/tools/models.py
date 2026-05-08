@@ -1,5 +1,7 @@
 from typing import Annotated, Literal
 
+from mcp.types import ToolAnnotations
+
 from fastmcp.server.dependencies import get_http_headers
 
 from connhex_mcp.dependencies import get_models_service
@@ -8,7 +10,10 @@ from connhex_mcp.services.models import Model, ModelsPage
 from connhex_mcp.services.things import ThingsPage
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Get Thing Model",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_model(
     model_id: Annotated[str, "UUID of the model."],
 ) -> Model:
@@ -18,7 +23,10 @@ async def get_model(
     return Model.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="List Thing Models",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def list_models(
     limit: Annotated[int, "Max items to return (1–100)."] = 10,
     offset: Annotated[int, "Number of items to skip."] = 0,
@@ -45,7 +53,10 @@ async def list_models(
     return ModelsPage.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="List Model Things",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_model_things(
     model_id: Annotated[str, "UUID of the model."],
     limit: Annotated[int, "Max items to return."] = 10,

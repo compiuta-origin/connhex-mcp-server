@@ -1,5 +1,7 @@
 from typing import Annotated, Literal
 
+from mcp.types import ToolAnnotations
+
 from fastmcp.server.dependencies import get_http_headers
 
 from connhex_mcp.dependencies import get_things_service
@@ -15,7 +17,10 @@ from connhex_mcp.services.things import (
 )
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Get Thing",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_thing(
     thing_id: Annotated[str, "UUID of the thing to retrieve."],
 ) -> Thing:
@@ -25,7 +30,10 @@ async def get_thing(
     return Thing.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="List Things",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def list_things(
     limit: Annotated[int, "Max items to return (1–100)."] = 50,
     offset: Annotated[int, "Number of items to skip."] = 0,
@@ -48,7 +56,10 @@ async def list_things(
     return ThingsPage.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Get Things Connectivity Status",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_things_status(
     ids: Annotated[list[str], "Thing UUIDs to fetch connectivity status for."],
 ) -> BatchStatusRes:
@@ -59,7 +70,10 @@ async def get_things_status(
     return BatchStatusRes.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Get Fleet Connectivity Summary",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_things_status_summary() -> StatusSummary:
     """Get a fleet-wide connectivity summary: online, offline, never connected, active last hour."""
     headers = get_http_headers() or {}
@@ -67,7 +81,10 @@ async def get_things_status_summary() -> StatusSummary:
     return StatusSummary.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Get Flapping Things",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_things_flapping(
     window: Annotated[
         str | None, 'Observation window, e.g. "1h". Defaults to "1h" upstream.'
@@ -91,7 +108,10 @@ async def get_things_flapping(
     return FlappingResponse.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="Get Thing Uptime",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_thing_uptime(
     thing_id: Annotated[str, "UUID of the thing."],
     from_ts: Annotated[
@@ -107,7 +127,10 @@ async def get_thing_uptime(
     return UptimeResponse.model_validate(data)
 
 
-@mcp.tool()
+@mcp.tool(
+    title="List Thing Channels",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+)
 async def get_thing_channels(
     thing_id: Annotated[str, "UUID of the thing."],
     limit: Annotated[int, "Max items to return."] = 10,

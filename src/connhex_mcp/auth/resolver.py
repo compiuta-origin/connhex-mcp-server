@@ -12,6 +12,7 @@ class AuthResolver:
     def __init__(self, settings: Settings):
         self.settings = settings
         self._credentials_provider: CredentialsProvider | None = None
+        self._remote_mode = settings.public_url is not None
 
         if settings.auth_type == AuthType.CREDENTIALS:
             assert settings.username and settings.password, (
@@ -28,6 +29,17 @@ class AuthResolver:
         """
         Returns headers dict to use for Connhex API calls.
         """
+        # In remote OAuth mode, use the fastmcp-validated token first.
+        # After auto-renewal, AccessToken.token is the live Kratos token,
+        # which may differ from the (expired) Bearer in request headers.
+        if self._remote_mode:
+            try:
+                access_token = get_access_token()
+                if access_token and access_token.token:
+                    return {"Authorization": f"Bearer {access_token.token}"}
+            except Exception:
+                pass
+
         # Bearer token from transport headers
         bearer = await extract_bearer_from_headers(headers)
         if bearer:

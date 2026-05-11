@@ -2,10 +2,12 @@ import asyncio
 import logging
 import secrets
 import time
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 import httpx
+from cryptography.fernet import Fernet
 from fastmcp.server.auth.auth import AccessToken, OAuthProvider
 from mcp.server.auth.provider import (
     AuthorizationCode,
@@ -27,10 +29,53 @@ logger = logging.getLogger("connhex-mcp")
 
 FLOW_TTL = 300
 CODE_TTL = 300
+RENEWAL_IDLE_TTL = 7 * 24 * 60 * 60
+
+
+_fernet = Fernet(Fernet.generate_key())
+
+
+class StoredCredentials:
+    """Stores credentials encrypted in memory to limit accidental exposure.
+
+    Uses a process-local Fernet key so credentials are opaque in heap dumps
+    and never appear in logs or tracebacks.
+
+    Note: credentials are not persisted across restarts. Active Kratos sessions
+    survive a restart (the client token is re-validated against Kratos), but
+    auto-renewal capability is lost until the user next authenticates manually.
+
+    # TODO: replace credential storage with OAuth refresh tokens
+    """
+
+    __slots__ = ("_identifier", "_password")
+
+    def __repr__(self) -> str:
+        return "<StoredCredentials>"
+
+    __str__ = __repr__
+
+    def __init__(self, identifier: str, password: str):
+        self._identifier = _fernet.encrypt(identifier.encode())
+        self._password = _fernet.encrypt(password.encode())
+
+    def get(self) -> tuple[str, str]:
+        return (
+            _fernet.decrypt(self._identifier).decode(),
+            _fernet.decrypt(self._password).decode(),
+        )
 
 
 def _now() -> float:
     return time.time()
+
+
+@dataclass
+class RenewalRecord:
+    credentials: StoredCredentials
+    current_token: str
+    client_id: str
+    last_used_at: float
 
 
 class ConnhexOAuthProvider(OAuthProvider):
@@ -60,9 +105,71 @@ class ConnhexOAuthProvider(OAuthProvider):
         self._code_tokens: dict[str, str] = {}  # code -> ory_st_* token
         self._access_tokens: dict[str, AccessToken] = {}
         self._pending_flows: dict[str, dict] = {}
+        self._renewal_records: dict[str, RenewalRecord] = {}
+        self._token_records: dict[str, str] = {}
+        self._token_forwarding: dict[
+            str, str
+        ] = {}  # expired token -> live token
 
         # Start background cleanup task
         self._cleanup_task: asyncio.Task | None = None
+
+    def _create_renewal_record(
+        self, token: str, credentials: StoredCredentials
+    ) -> str:
+        record_id = secrets.token_urlsafe(16)
+        self._renewal_records[record_id] = RenewalRecord(
+            credentials=credentials,
+            current_token=token,
+            client_id="",
+            last_used_at=_now(),
+        )
+        self._token_records[token] = record_id
+        return record_id
+
+    def _get_record_for_token(
+        self, token: str
+    ) -> tuple[str, RenewalRecord] | None:
+        record_id = self._token_records.get(token)
+        if not record_id:
+            return None
+        record = self._renewal_records.get(record_id)
+        if not record:
+            self._token_records.pop(token, None)
+            return None
+        return record_id, record
+
+    def _get_record_for_request_token(
+        self, requested_token: str, live_token: str
+    ) -> tuple[str, RenewalRecord] | None:
+        return self._get_record_for_token(
+            requested_token
+        ) or self._get_record_for_token(live_token)
+
+    def _remove_record(self, record_id: str) -> None:
+        record = self._renewal_records.pop(record_id, None)
+        if not record:
+            return
+
+        self._access_tokens.pop(record.current_token, None)
+
+        tokens = [
+            token
+            for token, mapped_record_id in self._token_records.items()
+            if mapped_record_id == record_id
+        ]
+        for token in tokens:
+            self._token_records.pop(token, None)
+            self._access_tokens.pop(token, None)
+            self._token_forwarding.pop(token, None)
+
+        stale_aliases = [
+            token
+            for token, live_token in self._token_forwarding.items()
+            if live_token == record.current_token
+        ]
+        for token in stale_aliases:
+            self._token_forwarding.pop(token, None)
 
     def _ensure_cleanup(self) -> None:
         """Start the cleanup task if not already running."""
@@ -79,35 +186,44 @@ class ConnhexOAuthProvider(OAuthProvider):
         while True:
             await asyncio.sleep(30)
             try:
-                now = _now()
-
-                expired_flows = [
-                    k
-                    for k, v in self._pending_flows.items()
-                    if v.get("expires_at", 0) < now
-                ]
-                for k in expired_flows:
-                    self._pending_flows.pop(k, None)
-
-                expired_codes = [
-                    k
-                    for k, v in self._auth_codes.items()
-                    if (v.expires_at or 0) < now
-                ]
-                for k in expired_codes:
-                    self._auth_codes.pop(k, None)
-                    self._code_tokens.pop(k, None)
-
-                expired_tokens = [
-                    k
-                    for k, v in self._access_tokens.items()
-                    if v.expires_at and v.expires_at < now
-                ]
-                for k in expired_tokens:
-                    self._access_tokens.pop(k, None)
-
+                self._cleanup_once()
             except Exception:
                 logger.warning("Error in auth cleanup loop", exc_info=True)
+
+    def _cleanup_once(self) -> None:
+        now = _now()
+
+        expired_flows = [
+            k
+            for k, v in self._pending_flows.items()
+            if v.get("expires_at", 0) < now
+        ]
+        for k in expired_flows:
+            self._pending_flows.pop(k, None)
+
+        expired_codes = [
+            k for k, v in self._auth_codes.items() if (v.expires_at or 0) < now
+        ]
+        for k in expired_codes:
+            self._auth_codes.pop(k, None)
+            self._code_tokens.pop(k, None)
+
+        expired_tokens = [
+            k
+            for k, v in self._access_tokens.items()
+            if v.expires_at and v.expires_at < now
+        ]
+        for k in expired_tokens:
+            self._access_tokens.pop(k, None)
+
+        idle_record_ids = [
+            record_id
+            for record_id, record in self._renewal_records.items()
+            if record.last_used_at < now - RENEWAL_IDLE_TTL
+        ]
+        for record_id in idle_record_ids:
+            logger.info("Removing idle renewal state for record %s", record_id)
+            self._remove_record(record_id)
 
     async def get_client(
         self, client_id: str
@@ -185,6 +301,11 @@ class ConnhexOAuthProvider(OAuthProvider):
             scopes=[],
             expires_at=int(_now() + expires_in),
         )
+        record = self._get_record_for_token(ory_token)
+        if record:
+            _, renewal_record = record
+            renewal_record.client_id = client.client_id or ""
+            renewal_record.last_used_at = _now()
 
         logger.info("Token exchange complete for client %s", client.client_id)
         return OAuthToken(
@@ -194,43 +315,95 @@ class ConnhexOAuthProvider(OAuthProvider):
         )
 
     async def load_access_token(self, token: str) -> AccessToken | None:
-        """Verify token via Kratos whoami endpoint."""
-        # Check cache first
-        cached = self._access_tokens.get(token)
-        if cached and cached.expires_at and cached.expires_at > _now():
+        """Verify token via Kratos whoami endpoint. Auto-renews if expired."""
+        now = _now()
+        live = self._token_forwarding.get(token, token)
+        record_info = self._get_record_for_request_token(token, live)
+
+        # Cache hit on the live token
+        cached = self._access_tokens.get(live)
+        if cached and cached.expires_at and cached.expires_at > now:
+            if record_info:
+                _, record = record_info
+                record.last_used_at = now
             logger.debug("Access token cache hit")
             return cached
 
-        # Verify with Kratos
-        async with httpx.AsyncClient(timeout=KRATOS_TIMEOUT) as client:
-            resp = await client.get(
-                f"{self.accounts_url}/auth/sessions/whoami",
-                headers={"Authorization": f"Bearer {token}"},
-            )
+        # Verify live token with Kratos
+        expires_in = await self._get_session_ttl(live)
 
-        if resp.status_code != 200:
-            logger.warning(
-                "Access token validation failed (status %s)", resp.status_code
+        if expires_in is not None and expires_in > 0:
+            client_id = cached.client_id if cached else ""
+            if record_info:
+                _, record = record_info
+                record.last_used_at = now
+                client_id = client_id or record.client_id
+            access_token = AccessToken(
+                token=live,
+                client_id=client_id,
+                scopes=[],
+                expires_at=int(now + expires_in),
             )
-            self._access_tokens.pop(token, None)
+            self._access_tokens[live] = access_token
+            return access_token
+
+        # Session expired — try auto-renewal if credentials are known
+        if not record_info:
+            logger.warning(
+                "Access token expired and no credentials available for renewal"
+            )
+            self._access_tokens.pop(live, None)
             return None
 
-        data = resp.json()
-        try:
-            expires_at = int(
-                datetime.fromisoformat(data["expires_at"]).timestamp()
-            )
-        except (KeyError, ValueError):
-            expires_at = int(_now() + 3600)
-
-        access_token = AccessToken(
-            token=token,
-            client_id="",
-            scopes=[],
-            expires_at=expires_at,
+        record_id, record = record_info
+        identifier, password = record.credentials.get()
+        logger.info(
+            "Session expired — attempting auto-renewal for user %s", identifier
         )
-        self._access_tokens[token] = access_token
-        return access_token
+
+        try:
+            new_token = await kratos_password_login(
+                self.accounts_url, identifier, password
+            )
+        except Exception:
+            logger.warning(
+                "Auto-renewal failed for user %s", identifier, exc_info=True
+            )
+            self._access_tokens.pop(live, None)
+            return None
+
+        new_expires_in = await self._get_session_ttl(new_token)
+        if new_expires_in is None:
+            logger.warning(
+                "Renewed token failed Kratos validation for user %s", identifier
+            )
+            return None
+
+        old_client_id = cached.client_id if cached else record.client_id
+
+        self._token_forwarding[token] = new_token
+        if live != token:
+            self._token_forwarding[live] = new_token
+        self._token_records[new_token] = record_id
+        record.current_token = new_token
+        record.client_id = old_client_id
+        record.last_used_at = now
+
+        new_access_token = AccessToken(
+            token=new_token,
+            client_id=old_client_id,
+            scopes=[],
+            expires_at=int(now + new_expires_in),
+        )
+        self._access_tokens[new_token] = new_access_token
+        self._access_tokens.pop(live, None)
+
+        logger.info(
+            "Session auto-renewed for client %s (user %s)",
+            old_client_id,
+            identifier,
+        )
+        return new_access_token
 
     async def load_refresh_token(
         self,
@@ -252,9 +425,18 @@ class ConnhexOAuthProvider(OAuthProvider):
         )
 
     async def revoke_token(self, token) -> None:
-        """Remove token from local cache. Session remains valid in Kratos."""
+        """Clear local renewal state. Session remains valid in Kratos."""
         token_str = token.token if hasattr(token, "token") else str(token)
+        live = self._token_forwarding.get(token_str, token_str)
+        record = self._get_record_for_request_token(token_str, live)
+        if record:
+            record_id, _ = record
+            self._remove_record(record_id)
+            return
+
         self._access_tokens.pop(token_str, None)
+        self._access_tokens.pop(live, None)
+        self._token_forwarding.pop(token_str, None)
 
     def get_routes(self, mcp_path: str | None = None) -> list[Route]:
         """Add login form and favicon routes to the standard OAuth routes."""
@@ -335,6 +517,9 @@ class ConnhexOAuthProvider(OAuthProvider):
         try:
             ory_token = await kratos_password_login(
                 self.accounts_url, identifier, password
+            )
+            self._create_renewal_record(
+                ory_token, StoredCredentials(identifier, password)
             )
             logger.info("Successful login for %s", identifier)
         except ValueError as e:

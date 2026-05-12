@@ -173,9 +173,18 @@ async def read_thing_messages(
     thing = await get_things_service().get(thing_id, headers)
 
     metadata = thing.metadata
-    channel_id = metadata.event_channel_id if metadata else None
+    if isinstance(metadata, dict):
+        channel_id = metadata.get("event_channel_id")
+        meta_keys = sorted(metadata.keys()) if not channel_id else []
+    elif metadata is not None:
+        channel_id = metadata.event_channel_id
+        meta_keys = (
+            sorted(metadata.model_dump().keys()) if not channel_id else []
+        )
+    else:
+        channel_id = None
+        meta_keys = []
     if not channel_id:
-        meta_keys = sorted(metadata.model_dump().keys()) if metadata else []
         raise ConnhexAPIError(
             status=404,
             detail=(

@@ -1,0 +1,18 @@
+[project]
+name = "connhex-cli"
+version = "0.1.0"
+description = "Connhex command-line interface"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "connhex-sdk",
+    "typer>=0.25.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+connhex-sdk = { workspace = true }

@@ -5,7 +5,6 @@ from connhex_sdk.resources import (
     Resource,
     ResourcesService,
 )
-from fastmcp.server.dependencies import get_http_headers
 from mcp.types import ToolAnnotations
 
 from connhex_mcp.dependencies import (
@@ -97,10 +96,8 @@ async def _list_resources(
     page_limit: int = 25,
     page_offset: int = 0,
 ) -> ListResponse[Resource]:
-    headers = get_http_headers() or {}
     return await service.list(
         resource_type=resource_type,
-        headers=headers,
         filter=filter,
         sort=sort,
         include=include,
@@ -116,11 +113,9 @@ async def _get_resource(
     resource_id: str,
     include: str | None = None,
 ) -> Resource:
-    headers = get_http_headers() or {}
     return await service.get(
         resource_type=resource_type,
         ids=resource_id,
-        headers=headers,
         include=include,
     )
 
@@ -131,7 +126,6 @@ async def _create_resource(
     attributes: dict,
     relationships: dict | None = None,
 ) -> Resource:
-    headers = get_http_headers() or {}
     payload = {
         "data": {
             "type": resource_type,
@@ -141,7 +135,7 @@ async def _create_resource(
     if relationships:
         payload["data"]["relationships"] = relationships
 
-    return await service.create(resource_type, payload, headers)
+    return await service.create(resource_type, payload)
 
 
 async def _update_resource(
@@ -150,7 +144,6 @@ async def _update_resource(
     resource_id: str,
     attributes: dict,
 ) -> Resource:
-    headers = get_http_headers() or {}
     payload = {
         "data": {
             "type": resource_type,
@@ -158,7 +151,7 @@ async def _update_resource(
             "attributes": attributes,
         }
     }
-    return await service.update(resource_type, resource_id, payload, headers)
+    return await service.update(resource_type, resource_id, payload)
 
 
 async def _delete_resource(
@@ -166,8 +159,7 @@ async def _delete_resource(
     resource_type: str,
     resource_id: str,
 ) -> str:
-    headers = get_http_headers() or {}
-    await service.delete(resource_type, resource_id, headers)
+    await service.delete(resource_type, resource_id)
     return f"Resource {resource_id} of type '{resource_type}' deleted successfully."
 
 
@@ -286,10 +278,9 @@ def _register_jsonapi_tools(
     annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
 )
 async def get_schema() -> dict:
-    headers = get_http_headers() or {}
     return {
-        "resources": await get_resources_service().get_schema(headers),
-        "manufacturing": await get_manufacturing_service().get_schema(headers),
+        "resources": await get_resources_service().get_schema(),
+        "manufacturing": await get_manufacturing_service().get_schema(),
     }
 
 

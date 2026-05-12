@@ -24,7 +24,6 @@ def list_rules(
 
     async def _run():
         return await svc.list_rules(
-            {},
             severity=severity,
             status=status,
             page=page,
@@ -42,7 +41,7 @@ def get_rule(ctx: typer.Context, rule_id: str = typer.Argument(...)) -> None:
     svc = get_rules_service(ctx)
 
     async def _run():
-        return await svc.get_rule(rule_id, {})
+        return await svc.get_rule(rule_id)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -63,7 +62,7 @@ def create_rule(
         raise typer.Exit(1)
 
     async def _run():
-        return await svc.create_rule(data, {})
+        return await svc.create_rule(data)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -85,7 +84,7 @@ def update_rule(
         raise typer.Exit(1)
 
     async def _run():
-        return await svc.update_rule(rule_id, data, {})
+        return await svc.update_rule(rule_id, data)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -96,7 +95,7 @@ def delete_rule(ctx: typer.Context, rule_id: str = typer.Argument(...)) -> None:
     svc = get_rules_service(ctx)
 
     async def _run():
-        await svc.delete_rule(rule_id, {})
+        await svc.delete_rule(rule_id)
 
     asyncio.run(_run())
     typer.echo(f"Rule {rule_id} deleted.")
@@ -118,7 +117,6 @@ def list_events(
 
     async def _run():
         return await svc.list_rule_events(
-            {},
             rule_ids=rule_ids,
             from_date=from_date,
             to_date=to_date,

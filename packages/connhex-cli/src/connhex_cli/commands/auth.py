@@ -23,15 +23,9 @@ def login(
 ) -> None:
     """Log in and cache a session token."""
     from connhex_sdk.auth.kratos import kratos_password_login
-    from connhex_sdk.config import CoreSettings
+    from connhex_sdk.urls import accounts_url as build_accounts_url
 
-    settings = CoreSettings(
-        instance_url=instance_url,
-        auth_type="credentials",
-        username=username,
-        password=password,
-    )  # type: ignore[call-arg]
-    accounts_url = settings.accounts_url
+    accounts_url = build_accounts_url(instance_url)
 
     async def _login() -> str:
         return await kratos_password_login(accounts_url, username, password)
@@ -94,7 +88,7 @@ def whoami(ctx: typer.Context) -> None:
     svc = get_iam_service(ctx)
 
     async def _run() -> dict:
-        return await svc.whoami({})
+        return await svc.whoami()
 
     result = asyncio.run(_run())
     render(result, cli_ctx.output)

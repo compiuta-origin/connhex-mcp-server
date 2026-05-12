@@ -14,7 +14,6 @@ class ReaderService:
     async def read_messages(
         self,
         channel_id: str,
-        headers: dict,
         *,
         limit: int = 100,
         offset: int = 0,
@@ -56,7 +55,6 @@ class ReaderService:
         resp = await self.client.request(
             "GET",
             f"/iot/reader/channels/{channel_id}/messages",
-            headers,
             params=params,
         )
         return MessagesPage.model_validate(resp.json())

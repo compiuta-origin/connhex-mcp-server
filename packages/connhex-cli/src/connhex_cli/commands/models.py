@@ -26,7 +26,6 @@ def list_models(
 
     async def _run():
         return await svc.list(
-            {},
             limit=limit,
             offset=offset,
             name=name,
@@ -47,7 +46,7 @@ def get_model(ctx: typer.Context, model_id: str = typer.Argument(...)) -> None:
     svc = get_models_service(ctx)
 
     async def _run():
-        return await svc.get(model_id, {})
+        return await svc.get(model_id)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -67,7 +66,7 @@ def model_things(
 
     async def _run():
         return await svc.get_things(
-            model_id, {}, limit=limit, offset=offset, order=order, dir=dir
+            model_id, limit=limit, offset=offset, order=order, dir=dir
         )
 
     result = asyncio.run(_run())

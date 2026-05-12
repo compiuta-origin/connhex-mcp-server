@@ -3,6 +3,18 @@ from pydantic import Field, field_validator
 
 
 class MCPSettings(CoreSettings):
+    bearer_token: str | None = Field(
+        default=None,
+        description="Static bearer token (local mode fallback).",
+    )
+    username: str | None = Field(
+        default=None,
+        description="Username for password auth (local mode fallback).",
+    )
+    password: str | None = Field(
+        default=None,
+        description="Password for password auth (local mode fallback).",
+    )
     public_url: str | None = Field(
         default=None,
         description="Public base URL, required for remote mode",

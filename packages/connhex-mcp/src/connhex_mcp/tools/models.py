@@ -2,7 +2,6 @@ from typing import Annotated, Literal
 
 from connhex_sdk.models import Model, ModelsPage
 from connhex_sdk.things import ThingsPage
-from fastmcp.server.dependencies import get_http_headers
 from mcp.types import ToolAnnotations
 
 from connhex_mcp.dependencies import get_models_service
@@ -17,8 +16,7 @@ async def get_model(
     model_id: Annotated[str, "UUID of the model."],
 ) -> Model:
     """Get a single device model by ID."""
-    headers = get_http_headers() or {}
-    return await get_models_service().get(model_id, headers)
+    return await get_models_service().get(model_id)
 
 
 @mcp.tool(
@@ -37,9 +35,7 @@ async def list_models(
     tenant: Annotated[str | None, "Filter by tenant."] = None,
 ) -> ModelsPage:
     """List device models with optional filtering and pagination."""
-    headers = get_http_headers() or {}
     return await get_models_service().list(
-        headers,
         limit=limit,
         offset=offset,
         name=name,
@@ -62,7 +58,6 @@ async def get_model_things(
     dir: Annotated[Literal["asc", "desc"] | None, "Sort direction."] = None,
 ) -> ThingsPage:
     """List all things assigned to a specific device model."""
-    headers = get_http_headers() or {}
     return await get_models_service().get_things(
-        model_id, headers, limit=limit, offset=offset, order=order, dir=dir
+        model_id, limit=limit, offset=offset, order=order, dir=dir
     )

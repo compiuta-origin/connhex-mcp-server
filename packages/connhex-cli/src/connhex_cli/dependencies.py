@@ -1,7 +1,5 @@
 import typer
-from connhex_sdk.auth.resolver import AuthResolver
 from connhex_sdk.client import ConnhexClient
-from connhex_sdk.config import AuthType, CoreSettings
 from connhex_sdk.iam import IAMService
 from connhex_sdk.models import ModelsService
 from connhex_sdk.reader import ReaderService
@@ -23,14 +21,7 @@ def _make_client(ctx: typer.Context) -> ConnhexClient:
             err=True,
         )
         raise typer.Exit(1)
-
-    settings = CoreSettings(
-        instance_url=instance_url,
-        auth_type=AuthType.TOKEN,
-        bearer_token=token,
-    )
-    resolver = AuthResolver(settings)
-    return ConnhexClient(settings, resolver)
+    return ConnhexClient(instance_url=instance_url, token=token)
 
 
 def get_things_service(ctx: typer.Context) -> ThingsService:

@@ -38,7 +38,6 @@ def channel_messages(
     async def _run():
         return await svc.read_messages(
             channel_id=channel_id,
-            headers={},
             limit=limit,
             offset=offset,
             from_s=from_s,
@@ -82,7 +81,7 @@ def thing_messages(
     reader_svc = get_reader_service(ctx)
 
     async def _run():
-        thing = await things_svc.get(thing_id, {})
+        thing = await things_svc.get(thing_id)
         metadata = thing.metadata
         if isinstance(metadata, dict):
             channel_id = metadata.get("event_channel_id")

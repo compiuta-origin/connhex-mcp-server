@@ -7,7 +7,6 @@ from connhex_sdk.reader import (
     MessagesPage,
     ReadFormat,
 )
-from fastmcp.server.dependencies import get_http_headers
 from mcp.types import ToolAnnotations
 
 from connhex_mcp.dependencies import get_reader_service, get_things_service
@@ -81,10 +80,8 @@ async def _read_channel_messages(
     dsf: DecimationFunc | None,
     dsv: DecimationType | None,
 ) -> MessagesPage:
-    headers = get_http_headers() or {}
     return await get_reader_service().read_messages(
         channel_id=channel_id,
-        headers=headers,
         limit=limit,
         offset=offset,
         from_s=from_s,
@@ -169,8 +166,7 @@ async def read_thing_messages(
         then look for a field named connhexId (or similar) —
         that value is the thing_id to pass here, not the record's own id.
     """
-    headers = get_http_headers() or {}
-    thing = await get_things_service().get(thing_id, headers)
+    thing = await get_things_service().get(thing_id)
 
     metadata = thing.metadata
     if isinstance(metadata, dict):

@@ -17,7 +17,7 @@ class ResourcesService:
         self._schema_cache: tuple[float, dict] | None = None
         self._schema_ttl: float = _SCHEMA_TTL_SECONDS
 
-    async def get_schema(self, headers: dict) -> dict:
+    async def get_schema(self) -> dict:
         """
         Fetch the resource schema for this service. Cached per instance with a
         long TTL (schemas are not expected to change while the service is live).
@@ -31,7 +31,6 @@ class ResourcesService:
         resp = await self.client.request(
             "GET",
             f"/{self.base_url}/schema",
-            headers,
             extra_headers=_DEFAULT_HEADERS,
         )
         data = resp.json()
@@ -42,7 +41,6 @@ class ResourcesService:
     async def list(
         self,
         resource_type: str,
-        headers: dict,
         *,
         filter: dict | None = None,
         sort: str | None = None,
@@ -68,7 +66,6 @@ class ResourcesService:
         resp = await self.client.request(
             "GET",
             f"/{self.base_url}/{resource_type}/",
-            headers,
             params=params,
             extra_headers=_DEFAULT_HEADERS,
         )
@@ -80,7 +77,6 @@ class ResourcesService:
         self,
         resource_type: str,
         ids: str,
-        headers: dict,
         include: str | None = None,
     ) -> Resource:
         params = {}
@@ -89,19 +85,15 @@ class ResourcesService:
         resp = await self.client.request(
             "GET",
             f"/{self.base_url}/{resource_type}/{ids}/",
-            headers,
             params=params,
             extra_headers=_DEFAULT_HEADERS,
         )
         return Resource.model_validate(flatten_response(resp.json())["data"])
 
-    async def create(
-        self, resource_type: str, data: dict, headers: dict
-    ) -> Resource:
+    async def create(self, resource_type: str, data: dict) -> Resource:
         resp = await self.client.request(
             "POST",
             f"/{self.base_url}/{resource_type}/",
-            headers,
             json=data,
             extra_headers={
                 "Content-Type": "application/vnd.api+json",
@@ -111,12 +103,11 @@ class ResourcesService:
         return Resource.model_validate(flatten_response(resp.json())["data"])
 
     async def update(
-        self, resource_type: str, ids: str, data: dict, headers: dict
+        self, resource_type: str, ids: str, data: dict
     ) -> Resource:
         resp = await self.client.request(
             "PATCH",
             f"/{self.base_url}/{resource_type}/{ids}/",
-            headers,
             json=data,
             extra_headers={
                 "Content-Type": "application/vnd.api+json",
@@ -125,7 +116,7 @@ class ResourcesService:
         )
         return Resource.model_validate(flatten_response(resp.json())["data"])
 
-    async def delete(self, resource_type: str, ids: str, headers: dict) -> None:
+    async def delete(self, resource_type: str, ids: str) -> None:
         await self.client.request(
-            "DELETE", f"/{self.base_url}/{resource_type}/{ids}/", headers
+            "DELETE", f"/{self.base_url}/{resource_type}/{ids}/"
         )

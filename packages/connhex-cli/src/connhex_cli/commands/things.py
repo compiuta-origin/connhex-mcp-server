@@ -24,7 +24,7 @@ def list_things(
 
     async def _run():
         return await svc.list(
-            {}, limit=limit, offset=offset, name=name, order=order, dir=dir
+            limit=limit, offset=offset, name=name, order=order, dir=dir
         )
 
     result = asyncio.run(_run())
@@ -38,7 +38,7 @@ def get_thing(ctx: typer.Context, thing_id: str = typer.Argument(...)) -> None:
     svc = get_things_service(ctx)
 
     async def _run():
-        return await svc.get(thing_id, {})
+        return await svc.get(thing_id)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -53,7 +53,7 @@ def get_status(
     svc = get_things_service(ctx)
 
     async def _run():
-        return await svc.get_status(ids, {})
+        return await svc.get_status(ids)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -65,7 +65,7 @@ def status_summary(ctx: typer.Context) -> None:
     svc = get_things_service(ctx)
 
     async def _run():
-        return await svc.get_status_summary({})
+        return await svc.get_status_summary()
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -87,7 +87,7 @@ def flapping(
 
     async def _run():
         return await svc.get_flapping(
-            {}, window=window, min_reconnects=min_reconnects, limit=limit
+            window=window, min_reconnects=min_reconnects, limit=limit
         )
 
     render(asyncio.run(_run()), cli_ctx.output)
@@ -105,7 +105,7 @@ def uptime(
     svc = get_things_service(ctx)
 
     async def _run():
-        return await svc.get_uptime(thing_id, {}, from_ts=from_ts, to_ts=to_ts)
+        return await svc.get_uptime(thing_id, from_ts=from_ts, to_ts=to_ts)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -126,7 +126,7 @@ def channels(
 
     async def _run():
         return await svc.get_channels(
-            thing_id, {}, limit=limit, offset=offset, connected=connected
+            thing_id, limit=limit, offset=offset, connected=connected
         )
 
     result = asyncio.run(_run())

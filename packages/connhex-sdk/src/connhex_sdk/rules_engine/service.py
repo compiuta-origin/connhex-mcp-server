@@ -14,7 +14,6 @@ class RulesEngineService:
 
     async def list_rules(
         self,
-        headers: dict,
         *,
         ids: list[str] | None = None,
         tag_labels: list[str] | None = None,
@@ -41,43 +40,36 @@ class RulesEngineService:
         if status is not None:
             params["status"] = status
 
-        resp = await self.client.request(
-            "GET", "/rules", headers, params=params
-        )
+        resp = await self.client.request("GET", "/rules", params=params)
         return PagedRules.model_validate(resp.json())
 
-    async def get_rule(self, rule_id: str, headers: dict) -> Rule:
-        resp = await self.client.request("GET", f"/rules/{rule_id}", headers)
+    async def get_rule(self, rule_id: str) -> Rule:
+        resp = await self.client.request("GET", f"/rules/{rule_id}")
         return Rule.model_validate(resp.json())
 
-    async def create_rule(self, data: dict, headers: dict) -> Rule:
+    async def create_rule(self, data: dict) -> Rule:
         resp = await self.client.request(
             "POST",
             "/rules",
-            headers,
             json=data,
             extra_headers={"Content-Type": "application/json"},
         )
         return Rule.model_validate(resp.json())
 
-    async def update_rule(
-        self, rule_id: str, data: dict, headers: dict
-    ) -> Rule:
+    async def update_rule(self, rule_id: str, data: dict) -> Rule:
         resp = await self.client.request(
             "PATCH",
             f"/rules/{rule_id}",
-            headers,
             json=data,
             extra_headers={"Content-Type": "application/json"},
         )
         return Rule.model_validate(resp.json())
 
-    async def delete_rule(self, rule_id: str, headers: dict) -> None:
-        await self.client.request("DELETE", f"/rules/{rule_id}", headers)
+    async def delete_rule(self, rule_id: str) -> None:
+        await self.client.request("DELETE", f"/rules/{rule_id}")
 
     async def list_rule_events(
         self,
-        headers: dict,
         *,
         rule_ids: list[str] | None = None,
         from_date: str | None = None,
@@ -101,7 +93,5 @@ class RulesEngineService:
         if status is not None:
             params["status"] = status
 
-        resp = await self.client.request(
-            "GET", "/rules/events", headers, params=params
-        )
+        resp = await self.client.request("GET", "/rules/events", params=params)
         return PagedRuleEvents.model_validate(resp.json())

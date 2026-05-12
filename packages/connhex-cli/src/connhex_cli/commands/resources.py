@@ -38,7 +38,6 @@ def list_resources(
     async def _run():
         return await svc.list(
             resource_type=resource_type,
-            headers={},
             page_limit=page_limit,
             page_offset=page_offset,
             sort=sort,
@@ -65,7 +64,6 @@ def get_resource(
         return await svc.get(
             resource_type=resource_type,
             ids=resource_id,
-            headers={},
             include=include,
         )
 
@@ -105,7 +103,7 @@ def create_resource(
         payload["data"]["relationships"] = rels
 
     async def _run():
-        return await svc.create(resource_type, payload, {})
+        return await svc.create(resource_type, payload)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -137,7 +135,7 @@ def update_resource(
     }
 
     async def _run():
-        return await svc.update(resource_type, resource_id, payload, {})
+        return await svc.update(resource_type, resource_id, payload)
 
     render(asyncio.run(_run()), cli_ctx.output)
 
@@ -153,7 +151,7 @@ def delete_resource(
     svc = _svc(ctx, manufacturing)
 
     async def _run():
-        await svc.delete(resource_type, resource_id, {})
+        await svc.delete(resource_type, resource_id)
 
     asyncio.run(_run())
     typer.echo(f"Deleted {resource_type}/{resource_id}.")

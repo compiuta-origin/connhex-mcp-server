@@ -8,7 +8,6 @@ from connhex_mcp.auth.remote import (
     StoredCredentials,
 )
 from connhex_mcp.config import MCPSettings
-from connhex_sdk.config import AuthType
 from fastmcp.server.auth.auth import AccessToken
 
 
@@ -16,7 +15,6 @@ def make_settings() -> MCPSettings:
     return MCPSettings(
         instance_url="https://compiuta.connhex.dev",
         public_url="https://mcp.compiuta.connhex.dev",
-        auth_type=AuthType.SESSION,
     )
 
 

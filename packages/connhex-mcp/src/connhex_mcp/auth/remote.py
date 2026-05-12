@@ -8,6 +8,7 @@ from pathlib import Path
 
 import httpx
 from connhex_sdk.auth.kratos import KRATOS_TIMEOUT, kratos_password_login
+from connhex_sdk.urls import accounts_url as build_accounts_url
 from cryptography.fernet import Fernet
 from fastmcp.server.auth.auth import AccessToken, OAuthProvider
 from mcp.server.auth.provider import (
@@ -97,7 +98,7 @@ class ConnhexOAuthProvider(OAuthProvider):
         )
 
         self.settings = settings
-        self.accounts_url = settings.accounts_url
+        self.accounts_url = build_accounts_url(str(settings.instance_url))
 
         # In-memory stores
         self._clients: dict[str, OAuthClientInformationFull] = {}

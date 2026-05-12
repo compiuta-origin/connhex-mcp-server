@@ -5,20 +5,14 @@ class IAMService:
     def __init__(self, client: ConnhexClient):
         self.client = client
 
-    async def whoami(self, headers: dict) -> dict:
+    async def whoami(self) -> dict:
         resp = await self.client.request(
-            "GET",
-            "/auth/sessions/whoami",
-            headers,
-            base="accounts",
+            "GET", "/auth/sessions/whoami", base="accounts"
         )
         return resp.json()
 
-    async def get_identity_schemas(self, headers: dict) -> list:
+    async def get_identity_schemas(self) -> list:
         resp = await self.client.request(
-            "GET",
-            "/auth/schemas",
-            headers,
-            base="accounts",
+            "GET", "/auth/schemas", base="accounts"
         )
         return resp.json()

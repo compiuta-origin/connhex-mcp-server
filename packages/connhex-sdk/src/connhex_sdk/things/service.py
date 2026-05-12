@@ -16,15 +16,12 @@ class ThingsService:
     def __init__(self, client: ConnhexClient):
         self.client = client
 
-    async def get(self, thing_id: str, headers: dict) -> Thing:
-        resp = await self.client.request(
-            "GET", f"/iot/things/{thing_id}", headers
-        )
+    async def get(self, thing_id: str) -> Thing:
+        resp = await self.client.request("GET", f"/iot/things/{thing_id}")
         return Thing.model_validate(resp.json())
 
     async def list(
         self,
-        headers: dict,
         *,
         limit: int = 10,
         offset: int = 0,
@@ -39,30 +36,24 @@ class ThingsService:
             params["order"] = order
         if dir is not None:
             params["dir"] = dir
-        resp = await self.client.request(
-            "GET", "/iot/things", headers, params=params
-        )
+        resp = await self.client.request("GET", "/iot/things", params=params)
         return ThingsPage.model_validate(resp.json())
 
-    async def get_status(self, ids: list[str], headers: dict) -> BatchStatusRes:
+    async def get_status(self, ids: list[str]) -> BatchStatusRes:
         resp = await self.client.request(
             "POST",
             "/iot/things/status",
-            headers,
             json={"ids": ids},
             extra_headers={"Content-Type": "application/json"},
         )
         return BatchStatusRes.model_validate(resp.json())
 
-    async def get_status_summary(self, headers: dict) -> StatusSummary:
-        resp = await self.client.request(
-            "GET", "/iot/things/status/summary", headers
-        )
+    async def get_status_summary(self) -> StatusSummary:
+        resp = await self.client.request("GET", "/iot/things/status/summary")
         return StatusSummary.model_validate(resp.json())
 
     async def get_flapping(
         self,
-        headers: dict,
         *,
         window: str | None = None,
         min_reconnects: int | None = None,
@@ -76,14 +67,13 @@ class ThingsService:
         if limit is not None:
             params["limit"] = limit
         resp = await self.client.request(
-            "GET", "/iot/things/status/flapping", headers, params=params
+            "GET", "/iot/things/status/flapping", params=params
         )
         return FlappingResponse.model_validate(resp.json())
 
     async def get_uptime(
         self,
         thing_id: str,
-        headers: dict,
         *,
         from_ts: int | None = None,
         to_ts: int | None = None,
@@ -94,14 +84,13 @@ class ThingsService:
         if to_ts is not None:
             params["to"] = to_ts
         resp = await self.client.request(
-            "GET", f"/iot/things/{thing_id}/uptime", headers, params=params
+            "GET", f"/iot/things/{thing_id}/uptime", params=params
         )
         return UptimeResponse.model_validate(resp.json())
 
     async def get_channels(
         self,
         thing_id: str,
-        headers: dict,
         *,
         limit: int = 10,
         offset: int = 0,
@@ -111,6 +100,6 @@ class ThingsService:
         if connected is not None:
             params["connected"] = connected
         resp = await self.client.request(
-            "GET", f"/iot/things/{thing_id}/channels", headers, params=params
+            "GET", f"/iot/things/{thing_id}/channels", params=params
         )
         return ChannelsPage.model_validate(resp.json())

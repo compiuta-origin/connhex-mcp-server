@@ -12,7 +12,6 @@ from connhex_sdk.rules_engine import (
     RuleStatus,
     Tag,
 )
-from fastmcp.server.dependencies import get_http_headers
 from mcp.types import ToolAnnotations
 
 from connhex_mcp.dependencies import get_rules_engine_service
@@ -40,9 +39,7 @@ async def list_rules(
     sort: RuleSort = "createdAt:desc",
 ) -> PagedRules:
     """List rules from the Connhex Rules Engine."""
-    headers = get_http_headers() or {}
     return await get_rules_engine_service().list_rules(
-        headers,
         ids=ids,
         tag_labels=tag_labels,
         tag_label_values=tag_label_values,
@@ -60,8 +57,7 @@ async def list_rules(
 )
 async def get_rule(rule_id: Annotated[str, "Rule ID."]) -> Rule:
     """Get a single rule by ID from the Connhex Rules Engine."""
-    headers = get_http_headers() or {}
-    return await get_rules_engine_service().get_rule(rule_id, headers)
+    return await get_rules_engine_service().get_rule(rule_id)
 
 
 @mcp.tool(
@@ -86,7 +82,6 @@ async def create_rule(
     tags: list[Tag] | None = None,
 ) -> Rule:
     """Create a new rule in the Connhex Rules Engine."""
-    headers = get_http_headers() or {}
     payload: dict = {
         "name": name,
         "notification": _dump(notification),
@@ -101,7 +96,7 @@ async def create_rule(
     if tags is not None:
         payload["tags"] = [_dump(t) for t in tags]
 
-    return await get_rules_engine_service().create_rule(payload, headers)
+    return await get_rules_engine_service().create_rule(payload)
 
 
 @mcp.tool(
@@ -124,7 +119,6 @@ async def update_rule(
     tags: list[Tag] | None = None,
 ) -> Rule:
     """Partially update a rule. Only the fields provided are changed."""
-    headers = get_http_headers() or {}
     payload: dict = {}
     if name is not None:
         payload["name"] = name
@@ -141,9 +135,7 @@ async def update_rule(
     if tags is not None:
         payload["tags"] = [_dump(t) for t in tags]
 
-    return await get_rules_engine_service().update_rule(
-        rule_id, payload, headers
-    )
+    return await get_rules_engine_service().update_rule(rule_id, payload)
 
 
 @mcp.tool(
@@ -156,8 +148,7 @@ async def delete_rule(
     rule_id: Annotated[str, "Rule ID."],
 ) -> str:
     """Delete a rule. This action is irreversible."""
-    headers = get_http_headers() or {}
-    await get_rules_engine_service().delete_rule(rule_id, headers)
+    await get_rules_engine_service().delete_rule(rule_id)
     return f"Rule {rule_id} deleted successfully."
 
 
@@ -179,9 +170,7 @@ async def list_rule_events(
     sort: RuleSort = "createdAt:desc",
 ) -> PagedRuleEvents:
     """List rule events (triggered rule occurrences)."""
-    headers = get_http_headers() or {}
     return await get_rules_engine_service().list_rule_events(
-        headers,
         rule_ids=rule_ids,
         from_date=from_date,
         to_date=to_date,

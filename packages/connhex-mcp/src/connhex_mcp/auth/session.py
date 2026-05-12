@@ -3,7 +3,6 @@ import httpx
 
 async def extract_bearer_from_headers(headers: dict) -> str | None:
     """Extract Bearer token from Authorization header (case-insensitive)."""
-    # Create a lower-case mapping of headers to avoid case issues
     headers_lower = {k.lower(): v for k, v in headers.items()}
     auth = headers_lower.get("authorization", "")
     if auth.lower().startswith("bearer "):
@@ -28,7 +27,6 @@ async def extract_token_from_cookie(
                     "Accept": "application/json",
                     "Cookie": cookie,
                 },
-                # Adjust params if Connhex tokenization requires a specific template
                 params={"tokenize_as": "jwt_template"},
             )
             resp.raise_for_status()
@@ -37,5 +35,5 @@ async def extract_token_from_cookie(
             if tokenized:
                 return f"Bearer {tokenized}"
         except httpx.HTTPError:
-            pass  # Return None on failure, and optionally log it
+            pass
     return None

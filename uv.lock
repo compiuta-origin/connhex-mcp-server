@@ -242,12 +242,16 @@ version = "0.1.0"
 source = { editable = "packages/connhex-cli" }
 dependencies = [
     { name = "connhex-sdk" },
+    { name = "pydantic-settings" },
+    { name = "rich" },
     { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "connhex-sdk", editable = "packages/connhex-sdk" },
+    { name = "pydantic-settings", specifier = ">=2.0" },
+    { name = "rich", specifier = ">=13.0" },
     { name = "typer", specifier = ">=0.25.1" },
 ]
 

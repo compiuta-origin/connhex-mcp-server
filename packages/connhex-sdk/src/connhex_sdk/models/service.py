@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+from connhex_sdk.client import ConnhexClient
+from connhex_sdk.models.schemas import Model, ModelsPage
+from connhex_sdk.things.schemas import ThingsPage
+
+
+class ModelsService:
+    def __init__(self, client: ConnhexClient):
+        self.client = client
+
+    async def get(self, model_id: str, headers: dict) -> Model:
+        resp = await self.client.request(
+            "GET", f"/iot/models/{model_id}", headers
+        )
+        return Model.model_validate(resp.json())
+
+    async def list(
+        self,
+        headers: dict,
+        *,
+        limit: int = 10,
+        offset: int = 0,
+        name: str | None = None,
+        order: str | None = None,
+        dir: str | None = None,
+        tag: str | None = None,
+        tenant: str | None = None,
+    ) -> ModelsPage:
+        params: dict = {"limit": limit, "offset": offset}
+        if name is not None:
+            params["name"] = name
+        if order is not None:
+            params["order"] = order
+        if dir is not None:
+            params["dir"] = dir
+        if tag is not None:
+            params["tag"] = tag
+        if tenant is not None:
+            params["tenant"] = tenant
+        resp = await self.client.request(
+            "GET", "/iot/models", headers, params=params
+        )
+        return ModelsPage.model_validate(resp.json())
+
+    async def get_things(
+        self,
+        model_id: str,
+        headers: dict,
+        *,
+        limit: int = 10,
+        offset: int = 0,
+        order: str | None = None,
+        dir: str | None = None,
+    ) -> ThingsPage:
+        params: dict = {"limit": limit, "offset": offset}
+        if order is not None:
+            params["order"] = order
+        if dir is not None:
+            params["dir"] = dir
+        resp = await self.client.request(
+            "GET", f"/iot/models/{model_id}/things", headers, params=params
+        )
+        return ThingsPage.model_validate(resp.json())

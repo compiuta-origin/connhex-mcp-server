@@ -1,0 +1,5 @@
+provision.init_id,provision.init_key,provision.name,manufacturing.device_type
+SN123456789,38231aa0-e08f-46f6-bd1f-197c23d70d68,SN123456789,raspberrypi
+SN123456790,aa2d24c4-c675-4513-a4e0-838de4d21db6,SN123456790,raspberrypi
+SN123456791,40f0f830-55f7-44e3-956f-4e5b2e5479ac,SN123456791,raspberrypi
+SN123456792,970b27ad-657f-497f-8251-0217f990372a,SN123456792,raspberrypi

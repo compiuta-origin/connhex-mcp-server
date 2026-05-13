@@ -5,6 +5,7 @@ import typer
 
 from connhex_cli import __version__
 from connhex_cli.commands.auth import auth_app
+from connhex_cli.commands.connectables import connectables_app
 from connhex_cli.commands.messages import messages_app
 from connhex_cli.commands.models import models_app
 from connhex_cli.commands.resources import resources_app
@@ -23,6 +24,7 @@ app.add_typer(models_app, name="models")
 app.add_typer(resources_app, name="resources")
 app.add_typer(rules_app, name="rules")
 app.add_typer(messages_app, name="messages")
+app.add_typer(connectables_app, name="connectables")
 
 
 def _version_cb(value: bool) -> None:

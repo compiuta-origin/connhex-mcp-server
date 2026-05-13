@@ -1,6 +1,6 @@
 # Connhex CLI
 
-A command-line interface for [Connhex](https://connhex.com) that lets you manage things, models, resources, rules, and IoT messages from the terminal.
+A command-line interface for [Connhex](https://connhex.com) that lets you manage connectables, things, models, resources, rules, and IoT messages from the terminal.
 
 ## Installation
 
@@ -106,6 +106,53 @@ connhex-cli --output json things get <id>
 | `auth whoami` | Show current user info (network call)    |
 | `auth status` | Show cached credential info (local only) |
 
+### connectables
+
+Bulk-register devices end-to-end: provision API + manufacturing record, with rollback on failure.
+
+| Command                          | Description                                                |
+| -------------------------------- | ---------------------------------------------------------- |
+| `connectables register <file>`   | Bulk-register devices from a CSV/JSON file (or `-` stdin)  |
+
+Flags:
+
+```
+--format csv|json             Required when reading from stdin (- )
+--schema <name>               Manufacturing resource type        [default: device]
+--serial-number-field <name>  Manufacturing field auto-filled
+                              with provision.init_id             [default: serial_number]
+--connhex-id-field <name>     Manufacturing field auto-filled
+                              with the provisioned thing ID      [default: connhex_id]
+```
+
+Input format (CSV columns or flat JSON keys):
+
+```
+provision.init_id            (required) external identifier
+provision.init_key           external key (auto-generated UUID if omitted)
+provision.name               human-readable name
+provision.model              UUID of the device model
+provision.migration_key
+provision.migration_key_quota
+manufacturing.<field>        any attribute in --schema (snake_case
+                             is auto-normalized to camelCase)
+tenant                       optional tenant id
+```
+
+JSON may also use the nested shape: `[{"provision": {...}, "manufacturing": {...}, "tenant": "..."}]`.
+
+The command pre-validates the batch against the manufacturing schema (unknown fields, duplicate `init_id`/`init_key`, missing `init_id`, non-UUID `model`) before any API call. If the manufacturing step fails for any row, all provisioned things from that run are deleted.
+
+Examples:
+
+```bash
+connhex-cli connectables register ./devices.csv
+connhex-cli connectables register ./devices.json --schema sensors
+cat devices.json | connhex-cli connectables register - --format json
+echo '[{"provision":{"init_id":"SN1"},"manufacturing":{"device_type":"rpi"}}]' \
+  | connhex-cli connectables register - --format json
+```
+
 ### things
 
 | Command                                    | Description                                        |
@@ -188,6 +235,9 @@ connhex-cli resources list batches --manufacturing
 
 # CI usage with a token (no login required)
 CONNHEX_BEARER_TOKEN=ory_st_... connhex-cli --output json things list
+
+# Bulk-register a batch of devices from a CSV
+connhex-cli connectables register ./fleet.csv
 ```
 
 ## Logging

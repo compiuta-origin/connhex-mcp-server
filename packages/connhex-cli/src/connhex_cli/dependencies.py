@@ -2,6 +2,7 @@ import typer
 from connhex_sdk.client import ConnhexClient
 from connhex_sdk.iam import IAMService
 from connhex_sdk.models import ModelsService
+from connhex_sdk.provision import ProvisionService
 from connhex_sdk.reader import ReaderService
 from connhex_sdk.resources import ResourcesService
 from connhex_sdk.rules_engine import RulesEngineService
@@ -50,3 +51,7 @@ def get_rules_service(ctx: typer.Context) -> RulesEngineService:
 
 def get_iam_service(ctx: typer.Context) -> IAMService:
     return IAMService(_make_client(ctx))
+
+
+def get_provision_service(ctx: typer.Context) -> ProvisionService:
+    return ProvisionService(_make_client(ctx))

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from connhex_sdk.client import ConnhexClient
 from connhex_sdk.models.schemas import Model, ModelsPage
 from connhex_sdk.things.schemas import ThingsPage

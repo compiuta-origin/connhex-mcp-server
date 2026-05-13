@@ -6,8 +6,6 @@ The shape mirrors the legacy Go CLI: flat dotted keys (`provision.X`,
 `{provision, manufacturing, tenant}` form.
 """
 
-from __future__ import annotations
-
 import csv
 import io
 import json

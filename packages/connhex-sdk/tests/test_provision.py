@@ -1,7 +1,5 @@
 """Tests for ProvisionService and ProvisionData schema."""
 
-from __future__ import annotations
-
 import json
 
 import httpx

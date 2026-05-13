@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import time
 
 from connhex_sdk.client import ConnhexClient

@@ -1,3 +1,5 @@
+# Required: the `list` method below shadows the builtin, and `list[str]`
+# annotations on later methods would resolve to it without this import.
 from __future__ import annotations
 
 from connhex_sdk.client import ConnhexClient

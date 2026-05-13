@@ -9,8 +9,6 @@ Steps:
 6. On any manufacturing failure, roll back the bulk provision.
 """
 
-from __future__ import annotations
-
 import typer
 from connhex_sdk.errors import ConnhexAPIError
 from connhex_sdk.provision import ProvisionService

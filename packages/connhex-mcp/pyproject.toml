@@ -9,6 +9,7 @@ dependencies = [
     "connhex-sdk",
     "cryptography>=42.0",
     "fastmcp>=3.2.0",
+    "pydantic-settings>=2.0.0",
     "starlette>=0.37",
     "uvicorn>=0.30",
 ]

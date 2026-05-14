@@ -263,6 +263,7 @@ dependencies = [
     { name = "connhex-sdk" },
     { name = "cryptography" },
     { name = "fastmcp" },
+    { name = "pydantic-settings" },
     { name = "starlette" },
     { name = "uvicorn" },
 ]
@@ -272,6 +273,7 @@ requires-dist = [
     { name = "connhex-sdk", editable = "packages/connhex-sdk" },
     { name = "cryptography", specifier = ">=42.0" },
     { name = "fastmcp", specifier = ">=3.2.0" },
+    { name = "pydantic-settings", specifier = ">=2.0.0" },
     { name = "starlette", specifier = ">=0.37" },
     { name = "uvicorn", specifier = ">=0.30" },
 ]
@@ -316,14 +318,12 @@ source = { editable = "packages/connhex-sdk" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
-    { name = "pydantic-settings" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pydantic-settings", specifier = ">=2.0.0" },
 ]
 
 [[package]]

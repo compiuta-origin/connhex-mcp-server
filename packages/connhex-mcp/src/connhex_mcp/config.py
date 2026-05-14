@@ -1,8 +1,11 @@
-from connhex_sdk.config import CoreSettings
-from pydantic import Field, field_validator
+from pydantic import Field, HttpUrl, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class MCPSettings(CoreSettings):
+class MCPSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="CONNHEX_", extra="ignore")
+
+    instance_url: HttpUrl = Field(..., description="Connhex instance URL")
     bearer_token: str | None = Field(
         default=None,
         description="Static bearer token (local mode fallback).",

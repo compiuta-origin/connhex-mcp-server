@@ -1,7 +1,7 @@
 from typing import Annotated
 
-from connhex_sdk.errors import ConnhexAPIError
-from connhex_sdk.reader import (
+from connhex.errors import ConnhexAPIError
+from connhex.reader import (
     DecimationFunc,
     DecimationType,
     MessagesPage,

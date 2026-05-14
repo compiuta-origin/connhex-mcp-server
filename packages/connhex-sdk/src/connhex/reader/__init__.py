@@ -1,4 +1,4 @@
-from connhex_sdk.reader.schemas import (
+from connhex.reader.schemas import (
     DecimationFunc,
     DecimationType,
     JSONMessage,
@@ -6,7 +6,7 @@ from connhex_sdk.reader.schemas import (
     ReadFormat,
     SenMLMessage,
 )
-from connhex_sdk.reader.service import ReaderService
+from connhex.reader.service import ReaderService
 
 __all__ = [
     "DecimationFunc",

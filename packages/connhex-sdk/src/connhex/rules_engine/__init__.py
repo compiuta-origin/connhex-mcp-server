@@ -1,4 +1,4 @@
-from connhex_sdk.rules_engine.schemas import (
+from connhex.rules_engine.schemas import (
     ActiveWindow,
     ComparisonOperator,
     Condition,
@@ -26,7 +26,7 @@ from connhex_sdk.rules_engine.schemas import (
     ThresholdCondition,
     ThresholdConditionParams,
 )
-from connhex_sdk.rules_engine.service import RulesEngineService
+from connhex.rules_engine.service import RulesEngineService
 
 __all__ = [
     "ActiveWindow",

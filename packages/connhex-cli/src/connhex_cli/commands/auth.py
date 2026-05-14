@@ -5,8 +5,8 @@ import typer
 
 from connhex_cli.auth import store
 from connhex_cli.auth.models import StoredCreds
-from connhex_cli.context import CLIContext
 from connhex_cli.client import run
+from connhex_cli.context import CLIContext
 from connhex_cli.output import render
 
 auth_app = typer.Typer(help="Authentication commands.")
@@ -22,8 +22,8 @@ def login(
     ),
 ) -> None:
     """Log in and cache a session token."""
-    from connhex_sdk.auth.kratos import kratos_password_login
-    from connhex_sdk.urls import accounts_url as build_accounts_url
+    from connhex.auth.kratos import kratos_password_login
+    from connhex.urls import accounts_url as build_accounts_url
 
     accounts_url = build_accounts_url(instance_url)
 

@@ -1,7 +1,7 @@
 from typing import Any
 
-from connhex_sdk.provision import ProvisionData
-from connhex_sdk.schemas import ConnhexBaseModel
+from connhex.provision import ProvisionData
+from connhex.schemas import ConnhexBaseModel
 from pydantic import Field, ValidationInfo, model_validator
 
 from connhex_cli.commands.connectables.casing import snake_to_camel

@@ -1,4 +1,4 @@
-from connhex_sdk.things.schemas import (
+from connhex.things.schemas import (
     BatchStatusRes,
     Channel,
     ChannelsPage,
@@ -12,7 +12,7 @@ from connhex_sdk.things.schemas import (
     UptimeEvent,
     UptimeResponse,
 )
-from connhex_sdk.things.service import ThingsService
+from connhex.things.service import ThingsService
 
 __all__ = [
     "BatchStatusRes",

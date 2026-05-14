@@ -1,9 +1,9 @@
-from connhex_sdk.provision.schemas import (
+from connhex.provision.schemas import (
     BulkResult,
     ProvisionData,
     ProvisionedThing,
 )
-from connhex_sdk.provision.service import ProvisionService
+from connhex.provision.service import ProvisionService
 
 __all__ = [
     "BulkResult",

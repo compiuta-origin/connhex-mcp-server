@@ -1,7 +1,7 @@
 import asyncio
 from dataclasses import dataclass, field
 
-from connhex_sdk.auth.kratos import kratos_password_login
+from connhex.auth.kratos import kratos_password_login
 
 
 @dataclass

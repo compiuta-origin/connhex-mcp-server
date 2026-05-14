@@ -19,7 +19,7 @@ _DEFAULT_CONFIG = {
     },
     "loggers": {
         "connhex_cli": {"level": "DEBUG", "propagate": True},
-        "connhex_sdk": {"level": "DEBUG", "propagate": True},
+        "connhex": {"level": "DEBUG", "propagate": True},
         "httpcore": {"level": "WARNING", "propagate": True},
         "httpx": {"level": "WARNING", "propagate": True},
     },

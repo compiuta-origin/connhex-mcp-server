@@ -5,9 +5,8 @@ from typing import Any
 
 import pytest
 import typer
-from connhex_sdk.errors import ConnhexAPIError
-from connhex_sdk.provision import BulkResult, ProvisionedThing
-
+from connhex.errors import ConnhexAPIError
+from connhex.provision import BulkResult, ProvisionedThing
 from connhex_cli.commands.connectables import register
 
 FIXTURE = Path(__file__).parent / "fixtures" / "test_provision.csv"

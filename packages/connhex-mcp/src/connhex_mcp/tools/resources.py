@@ -1,6 +1,6 @@
 from typing import Callable
 
-from connhex_sdk.resources import (
+from connhex.resources import (
     ListResponse,
     Resource,
     ResourcesService,

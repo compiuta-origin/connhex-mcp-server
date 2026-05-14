@@ -6,9 +6,9 @@ from typing import Awaitable, Callable
 
 import httpx
 
-from connhex_sdk import __version__
-from connhex_sdk.errors import ConnhexAPIError, raise_for_connhex_response
-from connhex_sdk.urls import base_url
+from connhex import __version__
+from connhex.errors import ConnhexAPIError, raise_for_connhex_response
+from connhex.urls import base_url
 
 TIMEOUT = 30.0
 MAX_RETRIES = 2

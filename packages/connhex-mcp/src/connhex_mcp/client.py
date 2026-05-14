@@ -8,7 +8,7 @@ on the server instance.
 
 from functools import lru_cache
 
-from connhex_sdk import AsyncConnhex
+from connhex import AsyncConnhex
 
 from connhex_mcp.auth.token_resolver import build_token_provider
 from connhex_mcp.config import MCPSettings

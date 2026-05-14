@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 
 from pydantic import Field, field_validator, model_validator
 
-from connhex_sdk.schemas import ConnhexBaseModel
+from connhex.schemas import ConnhexBaseModel
 
 
 class ProvisionData(ConnhexBaseModel):

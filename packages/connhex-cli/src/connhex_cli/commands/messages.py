@@ -1,5 +1,5 @@
 import typer
-from connhex_sdk.errors import ConnhexAPIError
+from connhex.errors import ConnhexAPIError
 
 from connhex_cli.client import run
 from connhex_cli.context import CLIContext

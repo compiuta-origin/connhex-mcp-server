@@ -1,8 +1,8 @@
-from connhex_sdk.models.schemas import (
+from connhex.models.schemas import (
     Model,
     ModelsPage,
 )
-from connhex_sdk.models.service import ModelsService
+from connhex.models.service import ModelsService
 
 __all__ = [
     "Model",

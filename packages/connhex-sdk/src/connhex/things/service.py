@@ -2,8 +2,8 @@
 # annotations on later methods would resolve to it without this import.
 from __future__ import annotations
 
-from connhex_sdk.client import ConnhexClient
-from connhex_sdk.things.schemas import (
+from connhex._base_client import ConnhexClient
+from connhex.things.schemas import (
     BatchStatusRes,
     ChannelsPage,
     FlappingResponse,

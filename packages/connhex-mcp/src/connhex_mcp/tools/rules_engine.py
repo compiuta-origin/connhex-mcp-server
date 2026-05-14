@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from connhex_sdk.rules_engine import (
+from connhex.rules_engine import (
     Condition,
     Notification,
     PagedRuleEvents,

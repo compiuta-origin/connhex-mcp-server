@@ -4,10 +4,10 @@ requires-python = ">=3.11"
 
 [manifest]
 members = [
+    "connhex",
     "connhex-cli",
     "connhex-mcp",
     "connhex-python",
-    "connhex-sdk",
 ]
 
 [[package]]
@@ -237,11 +237,26 @@ wheels = [
 ]
 
 [[package]]
+name = "connhex"
+version = "0.1.0"
+source = { editable = "packages/connhex-sdk" }
+dependencies = [
+    { name = "httpx" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27.0,<1" },
+    { name = "pydantic", specifier = ">=2.0.0,<3" },
+]
+
+[[package]]
 name = "connhex-cli"
 version = "0.1.0"
 source = { editable = "packages/connhex-cli" }
 dependencies = [
-    { name = "connhex-sdk" },
+    { name = "connhex" },
     { name = "pydantic-settings" },
     { name = "rich" },
     { name = "typer" },
@@ -249,7 +264,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "connhex-sdk", editable = "packages/connhex-sdk" },
+    { name = "connhex", editable = "packages/connhex-sdk" },
     { name = "pydantic-settings", specifier = ">=2.0" },
     { name = "rich", specifier = ">=13.0" },
     { name = "typer", specifier = ">=0.25.1" },
@@ -260,7 +275,7 @@ name = "connhex-mcp"
 version = "0.1.0"
 source = { editable = "packages/connhex-mcp" }
 dependencies = [
-    { name = "connhex-sdk" },
+    { name = "connhex" },
     { name = "cryptography" },
     { name = "fastmcp" },
     { name = "pydantic-settings" },
@@ -270,7 +285,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "connhex-sdk", editable = "packages/connhex-sdk" },
+    { name = "connhex", editable = "packages/connhex-sdk" },
     { name = "cryptography", specifier = ">=42.0" },
     { name = "fastmcp", specifier = ">=3.2.0" },
     { name = "pydantic-settings", specifier = ">=2.0.0" },
@@ -283,9 +298,9 @@ name = "connhex-python"
 version = "0.0.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "connhex" },
     { name = "connhex-cli" },
     { name = "connhex-mcp" },
-    { name = "connhex-sdk" },
 ]
 
 [package.dev-dependencies]
@@ -298,9 +313,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "connhex", editable = "packages/connhex-sdk" },
     { name = "connhex-cli", editable = "packages/connhex-cli" },
     { name = "connhex-mcp", editable = "packages/connhex-mcp" },
-    { name = "connhex-sdk", editable = "packages/connhex-sdk" },
 ]
 
 [package.metadata.requires-dev]
@@ -309,21 +324,6 @@ dev = [
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.23" },
     { name = "ruff", specifier = ">=0.4" },
-]
-
-[[package]]
-name = "connhex-sdk"
-version = "0.1.0"
-source = { editable = "packages/connhex-sdk" }
-dependencies = [
-    { name = "httpx" },
-    { name = "pydantic" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "httpx", specifier = ">=0.27.0" },
-    { name = "pydantic", specifier = ">=2.0.0" },
 ]
 
 [[package]]

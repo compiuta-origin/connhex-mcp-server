@@ -10,9 +10,9 @@ Steps:
 """
 
 import typer
-from connhex_sdk.errors import ConnhexAPIError
-from connhex_sdk.provision import ProvisionService
-from connhex_sdk.resources import ResourcesService
+from connhex.errors import ConnhexAPIError
+from connhex.provision import ProvisionService
+from connhex.resources import ResourcesService
 
 from connhex_cli.commands.connectables.casing import snake_to_camel
 from connhex_cli.commands.connectables.loader import load

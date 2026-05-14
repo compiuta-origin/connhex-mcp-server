@@ -6,7 +6,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
-    "connhex-sdk",
+    "connhex",
     "typer>=0.25.1",
     "rich>=13.0",
     "pydantic-settings>=2.0",

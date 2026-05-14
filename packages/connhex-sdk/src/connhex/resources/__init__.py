@@ -1,13 +1,13 @@
-from connhex_sdk.resources.jsonapi import (
+from connhex.resources.jsonapi import (
     build_filter_params,
     flatten_resource,
     flatten_response,
 )
-from connhex_sdk.resources.schemas import (
+from connhex.resources.schemas import (
     ListResponse,
     Resource,
 )
-from connhex_sdk.resources.service import ResourcesService
+from connhex.resources.service import ResourcesService
 
 __all__ = [
     "ListResponse",

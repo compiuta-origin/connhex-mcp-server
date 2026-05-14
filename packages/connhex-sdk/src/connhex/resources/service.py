@@ -1,8 +1,8 @@
 import time
 
-from connhex_sdk.client import ConnhexClient
-from connhex_sdk.resources.jsonapi import build_filter_params, flatten_response
-from connhex_sdk.resources.schemas import ListResponse, Resource
+from connhex._base_client import ConnhexClient
+from connhex.resources.jsonapi import build_filter_params, flatten_response
+from connhex.resources.schemas import ListResponse, Resource
 
 _SCHEMA_TTL_SECONDS = 7 * 24 * 3600
 _DEFAULT_HEADERS = {"Accept": "application/vnd.api+json"}

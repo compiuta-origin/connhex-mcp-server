@@ -1,4 +1,4 @@
-from connhex_sdk.client import ConnhexClient
+from connhex._base_client import ConnhexClient
 
 
 class IAMService:

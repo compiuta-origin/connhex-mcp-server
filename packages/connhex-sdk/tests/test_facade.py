@@ -1,17 +1,16 @@
 """Tests for the AsyncConnhex top-level facade."""
 
+import connhex
 import httpx
 import pytest
-
-import connhex_sdk
-from connhex_sdk import AsyncConnhex, ConnhexAPIError
-from connhex_sdk.iam import IAMService
-from connhex_sdk.models import ModelsService
-from connhex_sdk.provision import ProvisionService
-from connhex_sdk.reader import ReaderService
-from connhex_sdk.resources import ResourcesService
-from connhex_sdk.rules_engine import RulesEngineService
-from connhex_sdk.things import ThingsService
+from connhex import AsyncConnhex, ConnhexAPIError
+from connhex.iam import IAMService
+from connhex.models import ModelsService
+from connhex.provision import ProvisionService
+from connhex.reader import ReaderService
+from connhex.resources import ResourcesService
+from connhex.rules_engine import RulesEngineService
+from connhex.things import ThingsService
 
 
 def _facade(handler) -> AsyncConnhex:
@@ -24,9 +23,9 @@ def _facade(handler) -> AsyncConnhex:
 
 
 def test_top_level_exports():
-    assert AsyncConnhex is connhex_sdk.AsyncConnhex
-    assert ConnhexAPIError is connhex_sdk.ConnhexAPIError
-    assert isinstance(connhex_sdk.__version__, str)
+    assert AsyncConnhex is connhex.AsyncConnhex
+    assert ConnhexAPIError is connhex.ConnhexAPIError
+    assert isinstance(connhex.__version__, str)
 
 
 def test_service_attributes_present_and_typed():

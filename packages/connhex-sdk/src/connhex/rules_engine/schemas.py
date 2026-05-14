@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from connhex_sdk.schemas import ConnhexBaseModel
+from connhex.schemas import ConnhexBaseModel
 
 RuleSeverity = Literal["info", "warning", "critical"]
 RuleStatus = Literal["active", "inactive"]

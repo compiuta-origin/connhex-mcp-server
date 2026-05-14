@@ -7,7 +7,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
-    "connhex-sdk",
+    "connhex",
     "connhex-mcp",
     "connhex-cli",
 ]
@@ -16,7 +16,7 @@ dependencies = [
 members = ["packages/*"]
 
 [tool.uv.sources]
-connhex-sdk = { workspace = true }
+connhex = { workspace = true }
 connhex-mcp = { workspace = true }
 connhex-cli = { workspace = true }
 

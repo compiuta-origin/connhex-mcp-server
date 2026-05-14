@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import Field, field_validator
 
-from connhex_sdk.schemas import ConnhexBaseModel
+from connhex.schemas import ConnhexBaseModel
 
 
 class ThingMetadata(ConnhexBaseModel):

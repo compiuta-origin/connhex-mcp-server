@@ -8,7 +8,7 @@
 
 Three packages under `packages/`:
 
-- `connhex-sdk` — async Connhex API client, auth, and per-domain services + schemas. No fastmcp / no server dependencies. Importable as `connhex_sdk`.
+- `connhex-sdk` — async Connhex API client, auth, and per-domain services + schemas. No fastmcp / no server dependencies. Importable as `connhex`.
 - `connhex-mcp` — the MCP server (fastmcp-based). Depends on `connhex-sdk`. Console entry point: `connhex-mcp`.
 - `connhex-cli` — Typer-based CLI scaffold. Depends on `connhex-sdk`.
 

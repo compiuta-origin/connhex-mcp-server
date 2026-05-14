@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 
-from connhex_sdk.things import (
+from connhex.things import (
     BatchStatusRes,
     ChannelsPage,
     FlappingResponse,

@@ -9,7 +9,7 @@ import asyncio
 from typing import Awaitable, Callable, TypeVar
 
 import typer
-from connhex_sdk import AsyncConnhex
+from connhex import AsyncConnhex
 
 from connhex_cli.auth import provider
 from connhex_cli.context import CLIContext

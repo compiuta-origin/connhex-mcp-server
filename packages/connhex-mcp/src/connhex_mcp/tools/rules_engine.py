@@ -14,7 +14,7 @@ from connhex_sdk.rules_engine import (
 )
 from mcp.types import ToolAnnotations
 
-from connhex_mcp.dependencies import get_rules_engine_service
+from connhex_mcp.client import get_connhex
 from connhex_mcp.mcp_instance import mcp
 
 
@@ -39,7 +39,7 @@ async def list_rules(
     sort: RuleSort = "createdAt:desc",
 ) -> PagedRules:
     """List rules from the Connhex Rules Engine."""
-    return await get_rules_engine_service().list_rules(
+    return await get_connhex().rules.list_rules(
         ids=ids,
         tag_labels=tag_labels,
         tag_label_values=tag_label_values,
@@ -57,7 +57,7 @@ async def list_rules(
 )
 async def get_rule(rule_id: Annotated[str, "Rule ID."]) -> Rule:
     """Get a single rule by ID from the Connhex Rules Engine."""
-    return await get_rules_engine_service().get_rule(rule_id)
+    return await get_connhex().rules.get_rule(rule_id)
 
 
 @mcp.tool(
@@ -96,7 +96,7 @@ async def create_rule(
     if tags is not None:
         payload["tags"] = [_dump(t) for t in tags]
 
-    return await get_rules_engine_service().create_rule(payload)
+    return await get_connhex().rules.create_rule(payload)
 
 
 @mcp.tool(
@@ -135,7 +135,7 @@ async def update_rule(
     if tags is not None:
         payload["tags"] = [_dump(t) for t in tags]
 
-    return await get_rules_engine_service().update_rule(rule_id, payload)
+    return await get_connhex().rules.update_rule(rule_id, payload)
 
 
 @mcp.tool(
@@ -148,7 +148,7 @@ async def delete_rule(
     rule_id: Annotated[str, "Rule ID."],
 ) -> str:
     """Delete a rule. This action is irreversible."""
-    await get_rules_engine_service().delete_rule(rule_id)
+    await get_connhex().rules.delete_rule(rule_id)
     return f"Rule {rule_id} deleted successfully."
 
 
@@ -170,7 +170,7 @@ async def list_rule_events(
     sort: RuleSort = "createdAt:desc",
 ) -> PagedRuleEvents:
     """List rule events (triggered rule occurrences)."""
-    return await get_rules_engine_service().list_rule_events(
+    return await get_connhex().rules.list_rule_events(
         rule_ids=rule_ids,
         from_date=from_date,
         to_date=to_date,

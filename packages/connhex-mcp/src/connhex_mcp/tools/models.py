@@ -4,7 +4,7 @@ from connhex_sdk.models import Model, ModelsPage
 from connhex_sdk.things import ThingsPage
 from mcp.types import ToolAnnotations
 
-from connhex_mcp.dependencies import get_models_service
+from connhex_mcp.client import get_connhex
 from connhex_mcp.mcp_instance import mcp
 
 
@@ -16,7 +16,7 @@ async def get_model(
     model_id: Annotated[str, "UUID of the model."],
 ) -> Model:
     """Get a single device model by ID."""
-    return await get_models_service().get(model_id)
+    return await get_connhex().models.get(model_id)
 
 
 @mcp.tool(
@@ -35,7 +35,7 @@ async def list_models(
     tenant: Annotated[str | None, "Filter by tenant."] = None,
 ) -> ModelsPage:
     """List device models with optional filtering and pagination."""
-    return await get_models_service().list(
+    return await get_connhex().models.list(
         limit=limit,
         offset=offset,
         name=name,
@@ -58,6 +58,6 @@ async def get_model_things(
     dir: Annotated[Literal["asc", "desc"] | None, "Sort direction."] = None,
 ) -> ThingsPage:
     """List all things assigned to a specific device model."""
-    return await get_models_service().get_things(
+    return await get_connhex().models.get_things(
         model_id, limit=limit, offset=offset, order=order, dir=dir
     )

@@ -9,7 +9,7 @@ from connhex_sdk.reader import (
 )
 from mcp.types import ToolAnnotations
 
-from connhex_mcp.dependencies import get_reader_service, get_things_service
+from connhex_mcp.client import get_connhex
 from connhex_mcp.mcp_instance import mcp
 
 Limit = Annotated[int, "Max messages to return (upstream max is 1500)."]
@@ -80,7 +80,7 @@ async def _read_channel_messages(
     dsf: DecimationFunc | None,
     dsv: DecimationType | None,
 ) -> MessagesPage:
-    return await get_reader_service().read_messages(
+    return await get_connhex().reader.read_messages(
         channel_id=channel_id,
         limit=limit,
         offset=offset,
@@ -166,7 +166,7 @@ async def read_thing_messages(
         then look for a field named connhexId (or similar) —
         that value is the thing_id to pass here, not the record's own id.
     """
-    thing = await get_things_service().get(thing_id)
+    thing = await get_connhex().things.get(thing_id)
 
     metadata = thing.metadata
     if isinstance(metadata, dict):

@@ -13,7 +13,7 @@ import connhex_mcp.tools
 from connhex_mcp import __version__
 from connhex_mcp.auth.remote import ConnhexOAuthProvider
 from connhex_mcp.config import MCPSettings
-from connhex_mcp.dependencies import get_settings
+from connhex_mcp.client import get_settings
 from connhex_mcp.logging_setup import setup_logging
 from connhex_mcp.mcp_instance import mcp
 from connhex_mcp.middleware import OriginValidationMiddleware

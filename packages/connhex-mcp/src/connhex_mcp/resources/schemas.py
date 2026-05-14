@@ -1,11 +1,6 @@
 import json
 
-from fastmcp.server.dependencies import get_http_headers
-
-from connhex_mcp.dependencies import (
-    get_manufacturing_service,
-    get_resources_service,
-)
+from connhex_mcp.client import get_connhex
 from connhex_mcp.mcp_instance import mcp
 
 SCHEMA_DESCRIPTION = """
@@ -41,8 +36,7 @@ payloads — it is the source of truth for valid types and field names.
     description=SCHEMA_DESCRIPTION,
 )
 async def resources_schema() -> str:
-    headers = get_http_headers() or {}
-    data = await get_resources_service().get_schema(headers)
+    data = await get_connhex().resources.get_schema()
     return json.dumps(data)
 
 
@@ -53,6 +47,5 @@ async def resources_schema() -> str:
     description=SCHEMA_DESCRIPTION,
 )
 async def manufacturing_schema() -> str:
-    headers = get_http_headers() or {}
-    data = await get_manufacturing_service().get_schema(headers)
+    data = await get_connhex().manufacturing.get_schema()
     return json.dumps(data)

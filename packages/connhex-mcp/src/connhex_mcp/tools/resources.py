@@ -7,10 +7,7 @@ from connhex_sdk.resources import (
 )
 from mcp.types import ToolAnnotations
 
-from connhex_mcp.dependencies import (
-    get_manufacturing_service,
-    get_resources_service,
-)
+from connhex_mcp.client import get_connhex
 from connhex_mcp.mcp_instance import mcp
 from connhex_mcp.resources.schemas import SCHEMA_DESCRIPTION
 
@@ -278,9 +275,10 @@ def _register_jsonapi_tools(
     annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
 )
 async def get_schema() -> dict:
+    connhex = get_connhex()
     return {
-        "resources": await get_resources_service().get_schema(),
-        "manufacturing": await get_manufacturing_service().get_schema(),
+        "resources": await connhex.resources.get_schema(),
+        "manufacturing": await connhex.manufacturing.get_schema(),
     }
 
 
@@ -301,10 +299,12 @@ _MANUFACTURING_NAMES = {
 }
 
 _register_jsonapi_tools(
-    get_resources_service, _RESOURCES_NAMES.__getitem__, "Resource"
+    lambda: get_connhex().resources,
+    _RESOURCES_NAMES.__getitem__,
+    "Resource",
 )
 _register_jsonapi_tools(
-    get_manufacturing_service,
+    lambda: get_connhex().manufacturing,
     _MANUFACTURING_NAMES.__getitem__,
     "Manufacturing Resource",
 )

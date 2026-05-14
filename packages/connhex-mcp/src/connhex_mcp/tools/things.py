@@ -11,7 +11,7 @@ from connhex_sdk.things import (
 )
 from mcp.types import ToolAnnotations
 
-from connhex_mcp.dependencies import get_things_service
+from connhex_mcp.client import get_connhex
 from connhex_mcp.mcp_instance import mcp
 
 
@@ -23,7 +23,7 @@ async def get_thing(
     thing_id: Annotated[str, "UUID of the thing to retrieve."],
 ) -> Thing:
     """Get a single thing by ID."""
-    return await get_things_service().get(thing_id)
+    return await get_connhex().things.get(thing_id)
 
 
 @mcp.tool(
@@ -40,7 +40,7 @@ async def list_things(
     dir: Annotated[Literal["asc", "desc"] | None, "Sort direction."] = None,
 ) -> ThingsPage:
     """List things with optional filtering and pagination."""
-    return await get_things_service().list(
+    return await get_connhex().things.list(
         limit=limit,
         offset=offset,
         name=name,
@@ -58,7 +58,7 @@ async def get_things_status(
 ) -> BatchStatusRes:
     """Get current connectivity status for a batch of things by their IDs.
     Things that have never connected are omitted from the response."""
-    return await get_things_service().get_status(ids)
+    return await get_connhex().things.get_status(ids)
 
 
 @mcp.tool(
@@ -67,7 +67,7 @@ async def get_things_status(
 )
 async def get_things_status_summary() -> StatusSummary:
     """Get a fleet-wide connectivity summary: online, offline, never connected, active last hour."""
-    return await get_things_service().get_status_summary()
+    return await get_connhex().things.get_status_summary()
 
 
 @mcp.tool(
@@ -87,7 +87,7 @@ async def get_things_flapping(
     ] = None,
 ) -> FlappingResponse:
     """List devices with an excessive number of reconnections (flapping) within a time window."""
-    return await get_things_service().get_flapping(
+    return await get_connhex().things.get_flapping(
         window=window,
         min_reconnects=min_reconnects,
         limit=limit,
@@ -106,7 +106,7 @@ async def get_thing_uptime(
     to_ts: Annotated[int, "End of range as Unix timestamp (seconds)."],
 ) -> UptimeResponse:
     """Get the connect/disconnect timeline and total uptime for a single thing within a time range."""
-    return await get_things_service().get_uptime(
+    return await get_connhex().things.get_uptime(
         thing_id, from_ts=from_ts, to_ts=to_ts
     )
 
@@ -122,6 +122,6 @@ async def get_thing_channels(
     connected: Annotated[bool | None, "Filter by connection state."] = None,
 ) -> ChannelsPage:
     """List the channels connected to a specific thing."""
-    return await get_things_service().get_channels(
+    return await get_connhex().things.get_channels(
         thing_id, limit=limit, offset=offset, connected=connected
     )

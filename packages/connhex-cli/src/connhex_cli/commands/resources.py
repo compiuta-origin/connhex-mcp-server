@@ -1,22 +1,16 @@
-import asyncio
 import json
 
 import typer
 
+from connhex_cli.client import run
 from connhex_cli.context import CLIContext
-from connhex_cli.dependencies import (
-    get_manufacturing_service,
-    get_resources_service,
-)
 from connhex_cli.output import render
 
 resources_app = typer.Typer(help="Manage resources and manufacturing records.")
 
 
-def _svc(ctx: typer.Context, manufacturing: bool):
-    if manufacturing:
-        return get_manufacturing_service(ctx)
-    return get_resources_service(ctx)
+def _svc(c, manufacturing: bool):
+    return c.manufacturing if manufacturing else c.resources
 
 
 @resources_app.command("list")
@@ -33,18 +27,16 @@ def list_resources(
 ) -> None:
     """List resources of a given type."""
     cli_ctx: CLIContext = ctx.obj
-    svc = _svc(ctx, manufacturing)
-
-    async def _run():
-        return await svc.list(
+    result = run(
+        ctx,
+        lambda c: _svc(c, manufacturing).list(
             resource_type=resource_type,
             page_limit=page_limit,
             page_offset=page_offset,
             sort=sort,
             include=include,
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result.data, cli_ctx.output)
 
 
@@ -58,16 +50,17 @@ def get_resource(
 ) -> None:
     """Get a resource by ID."""
     cli_ctx: CLIContext = ctx.obj
-    svc = _svc(ctx, manufacturing)
-
-    async def _run():
-        return await svc.get(
-            resource_type=resource_type,
-            ids=resource_id,
-            include=include,
-        )
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(
+        run(
+            ctx,
+            lambda c: _svc(c, manufacturing).get(
+                resource_type=resource_type,
+                ids=resource_id,
+                include=include,
+            ),
+        ),
+        cli_ctx.output,
+    )
 
 
 @resources_app.command("create")
@@ -82,8 +75,6 @@ def create_resource(
 ) -> None:
     """Create a new resource."""
     cli_ctx: CLIContext = ctx.obj
-    svc = _svc(ctx, manufacturing)
-
     try:
         attrs = json.loads(attributes)
     except json.JSONDecodeError as e:
@@ -102,10 +93,13 @@ def create_resource(
     if rels:
         payload["data"]["relationships"] = rels
 
-    async def _run():
-        return await svc.create(resource_type, payload)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(
+        run(
+            ctx,
+            lambda c: _svc(c, manufacturing).create(resource_type, payload),
+        ),
+        cli_ctx.output,
+    )
 
 
 @resources_app.command("update")
@@ -118,8 +112,6 @@ def update_resource(
 ) -> None:
     """Update a resource's attributes."""
     cli_ctx: CLIContext = ctx.obj
-    svc = _svc(ctx, manufacturing)
-
     try:
         attrs = json.loads(attributes)
     except json.JSONDecodeError as e:
@@ -134,10 +126,15 @@ def update_resource(
         }
     }
 
-    async def _run():
-        return await svc.update(resource_type, resource_id, payload)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(
+        run(
+            ctx,
+            lambda c: _svc(c, manufacturing).update(
+                resource_type, resource_id, payload
+            ),
+        ),
+        cli_ctx.output,
+    )
 
 
 @resources_app.command("delete")
@@ -148,10 +145,8 @@ def delete_resource(
     manufacturing: bool = typer.Option(False, "--manufacturing", "-m"),
 ) -> None:
     """Delete a resource."""
-    svc = _svc(ctx, manufacturing)
-
-    async def _run():
-        await svc.delete(resource_type, resource_id)
-
-    asyncio.run(_run())
+    run(
+        ctx,
+        lambda c: _svc(c, manufacturing).delete(resource_type, resource_id),
+    )
     typer.echo(f"Deleted {resource_type}/{resource_id}.")

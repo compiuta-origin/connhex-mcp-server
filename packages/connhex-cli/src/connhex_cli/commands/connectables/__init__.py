@@ -1,14 +1,9 @@
-import asyncio
-
 import typer
 from pydantic import ValidationError
 
-from connhex_cli.commands.connectables.register import run
+from connhex_cli.client import run as run_with_client
+from connhex_cli.commands.connectables.register import run as register_run
 from connhex_cli.context import CLIContext
-from connhex_cli.dependencies import (
-    get_manufacturing_service,
-    get_provision_service,
-)
 from connhex_cli.output import render
 
 connectables_app = typer.Typer(help="Manage connectables.")
@@ -76,16 +71,17 @@ def register_connectables(
     cli_ctx: CLIContext = ctx.obj
 
     try:
-        result = asyncio.run(
-            run(
+        result = run_with_client(
+            ctx,
+            lambda c: register_run(
                 file,
                 format.lower() if format else None,
                 schema=schema,
                 serial_field=serial_number_field,
                 connhex_field=connhex_id_field,
-                provision_svc=get_provision_service(ctx),
-                manufacturing_svc=get_manufacturing_service(ctx),
-            )
+                provision_svc=c.provision,
+                manufacturing_svc=c.manufacturing,
+            ),
         )
     except ValidationError as e:
         typer.echo(f"Validation failed:\n{e}", err=True)

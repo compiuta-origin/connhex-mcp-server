@@ -1,9 +1,7 @@
-import asyncio
-
 import typer
 
+from connhex_cli.client import run
 from connhex_cli.context import CLIContext
-from connhex_cli.dependencies import get_things_service
 from connhex_cli.output import render
 
 things_app = typer.Typer(help="Manage things (devices).")
@@ -20,14 +18,12 @@ def list_things(
 ) -> None:
     """List things with optional filtering."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_things_service(ctx)
-
-    async def _run():
-        return await svc.list(
+    result = run(
+        ctx,
+        lambda c: c.things.list(
             limit=limit, offset=offset, name=name, order=order, dir=dir
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result.things, cli_ctx.output)
 
 
@@ -35,12 +31,7 @@ def list_things(
 def get_thing(ctx: typer.Context, thing_id: str = typer.Argument(...)) -> None:
     """Get a single thing by ID."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_things_service(ctx)
-
-    async def _run():
-        return await svc.get(thing_id)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(run(ctx, lambda c: c.things.get(thing_id)), cli_ctx.output)
 
 
 @things_app.command("status")
@@ -50,24 +41,14 @@ def get_status(
 ) -> None:
     """Get connectivity status for one or more things."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_things_service(ctx)
-
-    async def _run():
-        return await svc.get_status(ids)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(run(ctx, lambda c: c.things.get_status(ids)), cli_ctx.output)
 
 
 @things_app.command("status-summary")
 def status_summary(ctx: typer.Context) -> None:
     """Get fleet-wide connectivity summary."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_things_service(ctx)
-
-    async def _run():
-        return await svc.get_status_summary()
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(run(ctx, lambda c: c.things.get_status_summary()), cli_ctx.output)
 
 
 @things_app.command("flapping")
@@ -83,14 +64,15 @@ def flapping(
 ) -> None:
     """List devices with excessive reconnections."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_things_service(ctx)
-
-    async def _run():
-        return await svc.get_flapping(
-            window=window, min_reconnects=min_reconnects, limit=limit
-        )
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(
+        run(
+            ctx,
+            lambda c: c.things.get_flapping(
+                window=window, min_reconnects=min_reconnects, limit=limit
+            ),
+        ),
+        cli_ctx.output,
+    )
 
 
 @things_app.command("uptime")
@@ -102,12 +84,15 @@ def uptime(
 ) -> None:
     """Get uptime for a thing within a time range."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_things_service(ctx)
-
-    async def _run():
-        return await svc.get_uptime(thing_id, from_ts=from_ts, to_ts=to_ts)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(
+        run(
+            ctx,
+            lambda c: c.things.get_uptime(
+                thing_id, from_ts=from_ts, to_ts=to_ts
+            ),
+        ),
+        cli_ctx.output,
+    )
 
 
 @things_app.command("channels")
@@ -122,12 +107,10 @@ def channels(
 ) -> None:
     """List channels connected to a thing."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_things_service(ctx)
-
-    async def _run():
-        return await svc.get_channels(
+    result = run(
+        ctx,
+        lambda c: c.things.get_channels(
             thing_id, limit=limit, offset=offset, connected=connected
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result.channels, cli_ctx.output)

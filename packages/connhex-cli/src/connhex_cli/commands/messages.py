@@ -1,10 +1,8 @@
-import asyncio
-
 import typer
 from connhex_sdk.errors import ConnhexAPIError
 
+from connhex_cli.client import run
 from connhex_cli.context import CLIContext
-from connhex_cli.dependencies import get_reader_service, get_things_service
 from connhex_cli.output import render
 
 messages_app = typer.Typer(help="Read messages from channels and things.")
@@ -33,10 +31,9 @@ def channel_messages(
 ) -> None:
     """Read messages from a channel."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_reader_service(ctx)
-
-    async def _run():
-        return await svc.read_messages(
+    result = run(
+        ctx,
+        lambda c: c.reader.read_messages(
             channel_id=channel_id,
             limit=limit,
             offset=offset,
@@ -48,9 +45,8 @@ def channel_messages(
             ds=ds,
             dsf=None,
             dsv=None,
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result, cli_ctx.output)
 
 
@@ -77,11 +73,9 @@ def thing_messages(
 ) -> None:
     """Read messages for a thing (resolves channel automatically)."""
     cli_ctx: CLIContext = ctx.obj
-    things_svc = get_things_service(ctx)
-    reader_svc = get_reader_service(ctx)
 
-    async def _run():
-        thing = await things_svc.get(thing_id)
+    async def _fn(c):
+        thing = await c.things.get(thing_id)
         metadata = thing.metadata
         if isinstance(metadata, dict):
             channel_id = metadata.get("event_channel_id")
@@ -96,7 +90,7 @@ def thing_messages(
                 detail=f"Thing {thing_id} has no 'event_channel_id' in metadata.",
             )
 
-        return await reader_svc.read_messages(
+        return await c.reader.read_messages(
             channel_id=channel_id,
             headers={},
             limit=limit,
@@ -111,5 +105,4 @@ def thing_messages(
             dsv=None,
         )
 
-    result = asyncio.run(_run())
-    render(result, cli_ctx.output)
+    render(run(ctx, _fn), cli_ctx.output)

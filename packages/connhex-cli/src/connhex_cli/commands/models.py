@@ -1,9 +1,7 @@
-import asyncio
-
 import typer
 
+from connhex_cli.client import run
 from connhex_cli.context import CLIContext
-from connhex_cli.dependencies import get_models_service
 from connhex_cli.output import render
 
 models_app = typer.Typer(help="Manage device models.")
@@ -22,10 +20,9 @@ def list_models(
 ) -> None:
     """List device models."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_models_service(ctx)
-
-    async def _run():
-        return await svc.list(
+    result = run(
+        ctx,
+        lambda c: c.models.list(
             limit=limit,
             offset=offset,
             name=name,
@@ -33,9 +30,8 @@ def list_models(
             dir=dir,
             tag=tag,
             tenant=tenant,
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result.models, cli_ctx.output)
 
 
@@ -43,12 +39,7 @@ def list_models(
 def get_model(ctx: typer.Context, model_id: str = typer.Argument(...)) -> None:
     """Get a device model by ID."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_models_service(ctx)
-
-    async def _run():
-        return await svc.get(model_id)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(run(ctx, lambda c: c.models.get(model_id)), cli_ctx.output)
 
 
 @models_app.command("things")
@@ -62,12 +53,10 @@ def model_things(
 ) -> None:
     """List things assigned to a model."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_models_service(ctx)
-
-    async def _run():
-        return await svc.get_things(
+    result = run(
+        ctx,
+        lambda c: c.models.get_things(
             model_id, limit=limit, offset=offset, order=order, dir=dir
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result.things, cli_ctx.output)

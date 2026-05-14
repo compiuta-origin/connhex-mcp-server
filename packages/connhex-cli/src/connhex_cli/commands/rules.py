@@ -1,10 +1,9 @@
-import asyncio
 import json
 
 import typer
 
+from connhex_cli.client import run
 from connhex_cli.context import CLIContext
-from connhex_cli.dependencies import get_rules_service
 from connhex_cli.output import render
 
 rules_app = typer.Typer(help="Manage rules engine rules.")
@@ -20,17 +19,15 @@ def list_rules(
 ) -> None:
     """List rules."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_rules_service(ctx)
-
-    async def _run():
-        return await svc.list_rules(
+    result = run(
+        ctx,
+        lambda c: c.rules.list_rules(
             severity=severity,
             status=status,
             page=page,
             page_size=page_size,
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result.results, cli_ctx.output)
 
 
@@ -38,12 +35,7 @@ def list_rules(
 def get_rule(ctx: typer.Context, rule_id: str = typer.Argument(...)) -> None:
     """Get a rule by ID."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_rules_service(ctx)
-
-    async def _run():
-        return await svc.get_rule(rule_id)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(run(ctx, lambda c: c.rules.get_rule(rule_id)), cli_ctx.output)
 
 
 @rules_app.command("create")
@@ -53,18 +45,12 @@ def create_rule(
 ) -> None:
     """Create a rule from a JSON payload."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_rules_service(ctx)
-
     try:
         data = json.loads(payload)
     except json.JSONDecodeError as e:
         typer.echo(f"Invalid JSON: {e}", err=True)
         raise typer.Exit(1)
-
-    async def _run():
-        return await svc.create_rule(data)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(run(ctx, lambda c: c.rules.create_rule(data)), cli_ctx.output)
 
 
 @rules_app.command("update")
@@ -75,29 +61,21 @@ def update_rule(
 ) -> None:
     """Update a rule."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_rules_service(ctx)
-
     try:
         data = json.loads(payload)
     except json.JSONDecodeError as e:
         typer.echo(f"Invalid JSON: {e}", err=True)
         raise typer.Exit(1)
-
-    async def _run():
-        return await svc.update_rule(rule_id, data)
-
-    render(asyncio.run(_run()), cli_ctx.output)
+    render(
+        run(ctx, lambda c: c.rules.update_rule(rule_id, data)),
+        cli_ctx.output,
+    )
 
 
 @rules_app.command("delete")
 def delete_rule(ctx: typer.Context, rule_id: str = typer.Argument(...)) -> None:
     """Delete a rule."""
-    svc = get_rules_service(ctx)
-
-    async def _run():
-        await svc.delete_rule(rule_id)
-
-    asyncio.run(_run())
+    run(ctx, lambda c: c.rules.delete_rule(rule_id))
     typer.echo(f"Rule {rule_id} deleted.")
 
 
@@ -112,17 +90,15 @@ def list_events(
 ) -> None:
     """List rule events."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_rules_service(ctx)
     rule_ids = [rule_id] if rule_id else None
-
-    async def _run():
-        return await svc.list_rule_events(
+    result = run(
+        ctx,
+        lambda c: c.rules.list_rule_events(
             rule_ids=rule_ids,
             from_date=from_date,
             to_date=to_date,
             page=page,
             page_size=page_size,
-        )
-
-    result = asyncio.run(_run())
+        ),
+    )
     render(result.results, cli_ctx.output)

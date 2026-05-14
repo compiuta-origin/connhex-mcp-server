@@ -6,7 +6,7 @@ import typer
 from connhex_cli.auth import store
 from connhex_cli.auth.models import StoredCreds
 from connhex_cli.context import CLIContext
-from connhex_cli.dependencies import get_iam_service
+from connhex_cli.client import run
 from connhex_cli.output import render
 
 auth_app = typer.Typer(help="Authentication commands.")
@@ -85,13 +85,7 @@ def logout(ctx: typer.Context) -> None:
 def whoami(ctx: typer.Context) -> None:
     """Show current user info (hits the network)."""
     cli_ctx: CLIContext = ctx.obj
-    svc = get_iam_service(ctx)
-
-    async def _run() -> dict:
-        return await svc.whoami()
-
-    result = asyncio.run(_run())
-    render(result, cli_ctx.output)
+    render(run(ctx, lambda c: c.iam.whoami()), cli_ctx.output)
 
 
 @auth_app.command()

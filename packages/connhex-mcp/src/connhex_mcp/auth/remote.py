@@ -8,7 +8,7 @@ from pathlib import Path
 
 import httpx
 from connhex.auth.kratos import KRATOS_TIMEOUT, kratos_password_login
-from connhex.urls import accounts_url as build_accounts_url
+from connhex.urls import build_accounts_url
 from cryptography.fernet import Fernet
 from fastmcp.server.auth.auth import AccessToken, OAuthProvider
 from mcp.server.auth.provider import (

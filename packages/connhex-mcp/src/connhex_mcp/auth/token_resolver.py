@@ -1,6 +1,6 @@
 from collections.abc import Awaitable, Callable
 
-from connhex.urls import accounts_url as build_accounts_url
+from connhex.urls import build_accounts_url
 from fastmcp.server.dependencies import get_access_token, get_http_headers
 
 from connhex_mcp.auth.credentials import CredentialsProvider

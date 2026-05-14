@@ -23,7 +23,7 @@ def login(
 ) -> None:
     """Log in and cache a session token."""
     from connhex.auth.kratos import kratos_password_login
-    from connhex.urls import accounts_url as build_accounts_url
+    from connhex.urls import build_accounts_url
 
     accounts_url = build_accounts_url(instance_url)
 

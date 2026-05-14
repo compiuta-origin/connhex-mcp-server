@@ -8,7 +8,7 @@ import httpx
 
 from connhex import __version__
 from connhex.errors import ConnhexAPIError, raise_for_connhex_response
-from connhex.urls import base_url
+from connhex.urls import build_url
 
 TIMEOUT = 30.0
 MAX_RETRIES = 2
@@ -99,7 +99,7 @@ class ConnhexClient:
         timeout: float | None = None,
         **kwargs,
     ) -> httpx.Response:
-        url = f"{base_url(self.instance_url, base)}{path}"
+        url = f"{build_url(self.instance_url, base)}{path}"
         token = await self._token_value()
         headers = {
             "Accept": "application/json",

@@ -1,4 +1,34 @@
-"""Build per-service Connhex URLs from a single instance URL."""
+"""URL builders for a Connhex deployment.
+
+A Connhex instance is served from a single root domain (the "instance URL",
+e.g. ``https://acme.connhex.com``). Each Connhex subsystem lives on a
+dedicated subdomain of that root: the public APIs on ``apis.<host>``, the
+identity / account flows on ``accounts.<host>``, and so on. The helpers in
+this module take an instance URL and return the right per-subsystem URL.
+
+Most users of the SDK never need to call these — :class:`AsyncConnhex`
+handles URL construction internally. They are exposed publicly for code
+that lives next to the SDK and needs to talk to the same deployment outside
+the standard request path, for example:
+
+- building a browser redirect to the accounts portal (login, password
+  reset, OAuth consent),
+- assembling webhook callback URLs that point back at the same instance,
+- driving custom auth flows that hit ``accounts.<host>`` directly.
+
+All helpers accept an ``instance_url`` with an explicit scheme and host
+(trailing slashes are tolerated) and raise :class:`ValueError` on malformed
+input. They are pure functions — no network calls, no caching.
+
+Example:
+
+    >>> build_apis_url("https://acme.connhex.com/")
+    'https://apis.acme.connhex.com'
+    >>> build_accounts_url("https://acme.connhex.com")
+    'https://accounts.acme.connhex.com'
+    >>> build_url("https://acme.connhex.com", "apis")
+    'https://apis.acme.connhex.com'
+"""
 
 from urllib.parse import urlsplit
 
@@ -10,19 +40,43 @@ def _parts(instance_url: str) -> tuple[str, str]:
     return parts.scheme, parts.hostname
 
 
-def apis_url(instance_url: str) -> str:
+def build_apis_url(instance_url: str) -> str:
+    """Return the ``apis.<host>`` URL for a Connhex instance.
+
+    This is the base URL for every Connhex REST API call. Combine it with
+    a service path (e.g. ``/things/v1/...``) to address a specific
+    endpoint. :class:`AsyncConnhex` uses this internally; reach for it
+    directly only when issuing requests outside the SDK's request path.
+    """
     scheme, host = _parts(instance_url)
     return f"{scheme}://apis.{host}"
 
 
-def accounts_url(instance_url: str) -> str:
+def build_accounts_url(instance_url: str) -> str:
+    """Return the ``accounts.<host>`` URL for a Connhex instance.
+
+    This is where identity and auth flows live: login, password reset,
+    OAuth authorization, and the Kratos endpoints behind them. Use it to
+    build browser redirects or to drive custom auth flows that the SDK's
+    bearer-token model does not cover.
+    """
     scheme, host = _parts(instance_url)
     return f"{scheme}://accounts.{host}"
 
 
-def base_url(instance_url: str, base: str) -> str:
-    if base == "apis":
-        return apis_url(instance_url)
-    if base == "accounts":
-        return accounts_url(instance_url)
-    raise ValueError(f"unknown base {base!r}")
+def build_url(instance_url: str, subsystem: str) -> str:
+    """Return the URL for a named Connhex subsystem.
+
+    ``subsystem`` selects the target: ``"apis"`` resolves to
+    :func:`build_apis_url`, ``"accounts"`` to :func:`build_accounts_url`.
+    Unknown values raise :class:`ValueError`.
+
+    Prefer the named helpers in new code; ``build_url`` exists for call
+    sites that pick the subsystem dynamically (e.g. configuration-driven
+    routing).
+    """
+    if subsystem == "apis":
+        return build_apis_url(instance_url)
+    if subsystem == "accounts":
+        return build_accounts_url(instance_url)
+    raise ValueError(f"unknown subsystem {subsystem!r}")

@@ -1,5 +1,6 @@
 import typer
 from connhex.errors import ConnhexAPIError
+from connhex.reader import ReadFormat
 
 from connhex_cli.client import run
 from connhex_cli.context import CLIContext
@@ -20,9 +21,7 @@ def channel_messages(
     to_s: float | None = typer.Option(
         None, "--to", help="End Unix epoch seconds."
     ),
-    format: str = typer.Option(
-        "messages", help="messages|params|infos|metrics"
-    ),
+    format: ReadFormat = typer.Option("messages"),
     name: str | None = typer.Option(None, help="SenML name filter."),
     publisher: str | None = typer.Option(None, help="Publisher UUID filter."),
     ds: str | None = typer.Option(
@@ -62,9 +61,7 @@ def thing_messages(
     to_s: float | None = typer.Option(
         None, "--to", help="End Unix epoch seconds."
     ),
-    format: str = typer.Option(
-        "messages", help="messages|params|infos|metrics"
-    ),
+    format: ReadFormat = typer.Option("messages"),
     name: str | None = typer.Option(None, help="SenML name filter."),
     publisher: str | None = typer.Option(None, help="Publisher UUID filter."),
     ds: str | None = typer.Option(

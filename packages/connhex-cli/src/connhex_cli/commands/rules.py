@@ -1,6 +1,7 @@
 import json
 
 import typer
+from connhex.rules_engine import RuleSeverity, RuleStatus
 
 from connhex_cli.client import run
 from connhex_cli.context import CLIContext
@@ -12,8 +13,10 @@ rules_app = typer.Typer(help="Manage rules engine rules.")
 @rules_app.command("list")
 def list_rules(
     ctx: typer.Context,
-    severity: str | None = typer.Option(None, help="Filter by severity."),
-    status: str | None = typer.Option(None, help="Filter by status."),
+    severity: RuleSeverity | None = typer.Option(
+        None, help="Filter by severity."
+    ),
+    status: RuleStatus | None = typer.Option(None, help="Filter by status."),
     page: int = typer.Option(0, help="Page number (0-indexed)."),
     page_size: int = typer.Option(1000, help="Results per page."),
 ) -> None:

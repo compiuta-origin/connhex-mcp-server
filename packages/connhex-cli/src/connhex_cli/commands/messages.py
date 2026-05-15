@@ -1,6 +1,6 @@
 import typer
 from connhex.errors import ConnhexAPIError
-from connhex.reader import ReadFormat
+from connhex.reader import DecimationFunc, DecimationType, ReadFormat
 
 from connhex_cli.client import run
 from connhex_cli.context import CLIContext
@@ -27,6 +27,10 @@ def channel_messages(
     ds: str | None = typer.Option(
         None, help='Decimation granularity, e.g. "5m".'
     ),
+    dsf: DecimationFunc | None = typer.Option(
+        None, help="Decimation function."
+    ),
+    dsv: DecimationType | None = typer.Option(None, help="Decimation type."),
 ) -> None:
     """Read messages from a channel."""
     cli_ctx: CLIContext = ctx.obj
@@ -42,8 +46,8 @@ def channel_messages(
             name=name,
             format=format,
             ds=ds,
-            dsf=None,
-            dsv=None,
+            dsf=dsf,
+            dsv=dsv,
         ),
     )
     render(result, cli_ctx.output)
@@ -67,6 +71,10 @@ def thing_messages(
     ds: str | None = typer.Option(
         None, help='Decimation granularity, e.g. "5m".'
     ),
+    dsf: DecimationFunc | None = typer.Option(
+        None, help="Decimation function."
+    ),
+    dsv: DecimationType | None = typer.Option(None, help="Decimation type."),
 ) -> None:
     """Read messages for a thing (resolves channel automatically)."""
     cli_ctx: CLIContext = ctx.obj
@@ -98,8 +106,8 @@ def thing_messages(
             name=name,
             format=format,
             ds=ds,
-            dsf=None,
-            dsv=None,
+            dsf=dsf,
+            dsv=dsv,
         )
 
     render(run(ctx, _fn), cli_ctx.output)

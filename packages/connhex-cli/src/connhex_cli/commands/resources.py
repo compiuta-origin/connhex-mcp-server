@@ -24,9 +24,35 @@ def list_resources(
     include: str | None = typer.Option(
         None, help="Related resources to include."
     ),
+    filter: str | None = typer.Option(
+        None,
+        help=(
+            "JSON filter dict. Example: "
+            '\'{"name": {"fuzzy-match": "sensor-01"}}\' '
+            "(e.g. for resource_type=device)."
+        ),
+    ),
+    fields: str | None = typer.Option(None, help="JSON fields dict."),
 ) -> None:
     """List resources of a given type."""
     cli_ctx: CLIContext = ctx.obj
+
+    filter_dict = None
+    if filter:
+        try:
+            filter_dict = json.loads(filter)
+        except json.JSONDecodeError as e:
+            typer.echo(f"Invalid JSON for filter: {e}", err=True)
+            raise typer.Exit(1)
+
+    fields_dict = None
+    if fields:
+        try:
+            fields_dict = json.loads(fields)
+        except json.JSONDecodeError as e:
+            typer.echo(f"Invalid JSON for fields: {e}", err=True)
+            raise typer.Exit(1)
+
     result = run(
         ctx,
         lambda c: _svc(c, manufacturing).list(
@@ -35,6 +61,8 @@ def list_resources(
             page_offset=page_offset,
             sort=sort,
             include=include,
+            filter=filter_dict,
+            fields=fields_dict,
         ),
     )
     render(result.data, cli_ctx.output)

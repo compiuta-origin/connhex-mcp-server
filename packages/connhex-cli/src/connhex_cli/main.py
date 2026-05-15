@@ -42,7 +42,7 @@ def main(
     token: str | None = typer.Option(
         None, "--token", envvar="CONNHEX_BEARER_TOKEN"
     ),
-    output: Literal["table", "json"] = typer.Option("table", "--output", "-o"),
+    output: Literal["table", "json"] = typer.Option("json", "--output", "-o"),
     log_config: str | None = typer.Option(
         None,
         "--log-config",

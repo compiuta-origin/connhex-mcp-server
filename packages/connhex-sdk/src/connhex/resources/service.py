@@ -63,7 +63,7 @@ class ResourcesService:
 
         resp = await self.client.request(
             "GET",
-            f"/{self.base_url}/{resource_type}/",
+            f"/{self.base_url}/{resource_type}",
             params=params,
             extra_headers=_DEFAULT_HEADERS,
         )
@@ -82,7 +82,7 @@ class ResourcesService:
             params["include"] = include
         resp = await self.client.request(
             "GET",
-            f"/{self.base_url}/{resource_type}/{ids}/",
+            f"/{self.base_url}/{resource_type}/{ids}",
             params=params,
             extra_headers=_DEFAULT_HEADERS,
         )
@@ -91,7 +91,7 @@ class ResourcesService:
     async def create(self, resource_type: str, data: dict) -> Resource:
         resp = await self.client.request(
             "POST",
-            f"/{self.base_url}/{resource_type}/",
+            f"/{self.base_url}/{resource_type}",
             json=data,
             extra_headers={
                 "Content-Type": "application/vnd.api+json",
@@ -105,7 +105,7 @@ class ResourcesService:
     ) -> Resource:
         resp = await self.client.request(
             "PATCH",
-            f"/{self.base_url}/{resource_type}/{ids}/",
+            f"/{self.base_url}/{resource_type}/{ids}",
             json=data,
             extra_headers={
                 "Content-Type": "application/vnd.api+json",
@@ -116,5 +116,5 @@ class ResourcesService:
 
     async def delete(self, resource_type: str, ids: str) -> None:
         await self.client.request(
-            "DELETE", f"/{self.base_url}/{resource_type}/{ids}/"
+            "DELETE", f"/{self.base_url}/{resource_type}/{ids}"
         )

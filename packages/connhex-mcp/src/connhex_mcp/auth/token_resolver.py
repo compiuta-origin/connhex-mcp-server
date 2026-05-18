@@ -35,9 +35,10 @@ def build_token_provider(
       5. Static `bearer_token` from settings.
       6. Username/password credentials (auto-refreshing).
     """
-    accounts_url = build_accounts_url(str(settings.instance_url))
+    instance_url = str(settings.instance_url)
+    accounts_url = build_accounts_url(instance_url)
     creds = (
-        CredentialsProvider(accounts_url, settings.username, settings.password)
+        CredentialsProvider(instance_url, settings.username, settings.password)
         if settings.username and settings.password
         else None
     )

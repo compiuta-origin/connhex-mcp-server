@@ -51,16 +51,16 @@ async def test_load_access_token_auto_renews_when_credentials_are_known(
         raise AssertionError(f"unexpected token: {token}")
 
     async def fake_login(
-        accounts_url: str, identifier: str, password: str
+        instance_url: str, identifier: str, password: str
     ) -> str:
-        assert accounts_url == "https://accounts.compiuta.connhex.dev"
+        assert instance_url == "https://compiuta.connhex.dev/"
         assert identifier == "user@example.com"
         assert password == "secret"
         return "renewed-token"
 
     monkeypatch.setattr(remote, "_now", lambda: 1000.0)
     monkeypatch.setattr(provider, "_get_session_ttl", fake_get_session_ttl)
-    monkeypatch.setattr(remote, "kratos_password_login", fake_login)
+    monkeypatch.setattr(remote, "password_login", fake_login)
 
     token = await provider.load_access_token("expired-token")
 
@@ -101,14 +101,14 @@ async def test_load_access_token_reuses_forwarded_token_after_renewal(
         raise AssertionError(f"unexpected token: {token}")
 
     async def fake_login(
-        accounts_url: str, identifier: str, password: str
+        instance_url: str, identifier: str, password: str
     ) -> str:
-        login_calls.append((accounts_url, identifier, password))
+        login_calls.append((instance_url, identifier, password))
         return "renewed-token"
 
     monkeypatch.setattr(remote, "_now", lambda: now)
     monkeypatch.setattr(provider, "_get_session_ttl", fake_get_session_ttl)
-    monkeypatch.setattr(remote, "kratos_password_login", fake_login)
+    monkeypatch.setattr(remote, "password_login", fake_login)
 
     first = await provider.load_access_token("expired-token")
     second = await provider.load_access_token("expired-token")
@@ -124,7 +124,7 @@ async def test_load_access_token_reuses_forwarded_token_after_renewal(
     assert provider._access_tokens["renewed-token"].token == "renewed-token"
     assert login_calls == [
         (
-            "https://accounts.compiuta.connhex.dev",
+            "https://compiuta.connhex.dev/",
             "user@example.com",
             "secret",
         )

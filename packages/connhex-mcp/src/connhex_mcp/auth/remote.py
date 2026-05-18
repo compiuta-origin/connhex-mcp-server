@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import httpx
-from connhex.auth.kratos import KRATOS_TIMEOUT, kratos_password_login
+from connhex.aio.auth import PASSWORD_LOGIN_TIMEOUT, password_login
 from connhex.urls import build_accounts_url
 from cryptography.fernet import Fernet
 from fastmcp.server.auth.auth import AccessToken, OAuthProvider
@@ -363,8 +363,8 @@ class ConnhexOAuthProvider(OAuthProvider):
         )
 
         try:
-            new_token = await kratos_password_login(
-                self.accounts_url, identifier, password
+            new_token = await password_login(
+                str(self.settings.instance_url), identifier, password
             )
         except Exception:
             logger.warning(
@@ -516,8 +516,8 @@ class ConnhexOAuthProvider(OAuthProvider):
             )
 
         try:
-            ory_token = await kratos_password_login(
-                self.accounts_url, identifier, password
+            ory_token = await password_login(
+                str(self.settings.instance_url), identifier, password
             )
             self._create_renewal_record(
                 ory_token, StoredCredentials(identifier, password)
@@ -578,7 +578,7 @@ class ConnhexOAuthProvider(OAuthProvider):
 
     async def _get_session_ttl(self, token: str) -> int | None:
         """Get remaining TTL for a session token, or None if invalid."""
-        async with httpx.AsyncClient(timeout=KRATOS_TIMEOUT) as client:
+        async with httpx.AsyncClient(timeout=PASSWORD_LOGIN_TIMEOUT) as client:
             resp = await client.get(
                 f"{self.accounts_url}/auth/sessions/whoami",
                 headers={"Authorization": f"Bearer {token}"},

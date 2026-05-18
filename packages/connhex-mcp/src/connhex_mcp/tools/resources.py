@@ -1,10 +1,7 @@
 from typing import Callable
 
-from connhex.resources import (
-    ListResponse,
-    Resource,
-    ResourcesService,
-)
+from connhex.aio.services.resources import ResourcesService
+from connhex.schemas.resources import ListResponse, Resource
 from mcp.types import ToolAnnotations
 
 from connhex_mcp.client import get_connhex

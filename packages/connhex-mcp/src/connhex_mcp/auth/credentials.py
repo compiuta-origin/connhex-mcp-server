@@ -1,12 +1,12 @@
 import asyncio
 from dataclasses import dataclass, field
 
-from connhex.auth.kratos import kratos_password_login
+from connhex.aio.auth import password_login
 
 
 @dataclass
 class CredentialsProvider:
-    accounts_url: str
+    instance_url: str
     username: str
     password: str
     _token: str | None = field(default=None, init=False)
@@ -29,6 +29,6 @@ class CredentialsProvider:
             return self._token
 
     async def _login(self) -> str:
-        return await kratos_password_login(
-            self.accounts_url, self.username, self.password
+        return await password_login(
+            self.instance_url, self.username, self.password
         )

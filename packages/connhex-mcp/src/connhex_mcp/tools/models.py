@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 
-from connhex.models import Model, ModelsPage
-from connhex.things import ThingsPage
+from connhex.schemas.models import Model, ModelsPage
+from connhex.schemas.things import ThingsPage
 from mcp.types import ToolAnnotations
 
 from connhex_mcp.client import get_connhex

@@ -1,6 +1,6 @@
 """Tests for connhex_mcp.utils.jsonapi.build_filter_params."""
 
-from connhex.resources.jsonapi import build_filter_params
+from connhex._jsonapi import build_filter_params
 
 
 def test_empty_filter_returns_empty_dict():

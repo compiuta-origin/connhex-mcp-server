@@ -1,6 +1,6 @@
-from connhex._base_client import ConnhexClient
-from connhex.models.schemas import Model, ModelsPage
-from connhex.things.schemas import ThingsPage
+from connhex.aio._base_client import ConnhexClient
+from connhex.schemas.models import Model, ModelsPage
+from connhex.schemas.things import ThingsPage
 
 
 class ModelsService:

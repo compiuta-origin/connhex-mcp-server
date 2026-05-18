@@ -1,6 +1,6 @@
 """Tests for connhex_mcp.utils.jsonapi flattening helpers."""
 
-from connhex.resources.jsonapi import flatten_resource, flatten_response
+from connhex._jsonapi import flatten_resource, flatten_response
 
 # ---------------------------------------------------------------------------
 # flatten_resource

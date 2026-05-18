@@ -4,7 +4,7 @@ from itertools import count
 
 import httpx
 import pytest
-from connhex._base_client import ConnhexClient
+from connhex.aio._base_client import ConnhexClient
 from connhex.errors import ConnhexAPIError
 
 
@@ -19,7 +19,7 @@ def _make_client(monkeypatch, handler, *, max_retries=2, **kwargs):
     async def fake_sleep(delay: float) -> None:
         sleeps.append(delay)
 
-    monkeypatch.setattr("connhex._base_client.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr("connhex.aio._base_client._sleep", fake_sleep)
 
     client = ConnhexClient(
         instance_url="https://example.test",

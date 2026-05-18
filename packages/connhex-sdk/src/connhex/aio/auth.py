@@ -1,15 +1,23 @@
 import httpx
 
-KRATOS_TIMEOUT = 10.0
+from connhex.urls import build_accounts_url
+
+PASSWORD_LOGIN_TIMEOUT = 10.0
 
 
-async def kratos_password_login(
-    accounts_url: str,
+async def password_login(
+    instance_url: str,
     identifier: str,
     password: str,
+    *,
+    timeout: float = PASSWORD_LOGIN_TIMEOUT,
 ) -> str:
-    """Two-step Kratos API login. Returns the ory_st_* session token."""
-    async with httpx.AsyncClient(timeout=KRATOS_TIMEOUT) as client:
+    """Exchange username/password for a Connhex session token.
+
+    Returns the bearer token suitable for `Connhex(token=...)`.
+    """
+    accounts_url = build_accounts_url(instance_url)
+    async with httpx.AsyncClient(timeout=timeout) as client:
         flow_resp = await client.get(
             f"{accounts_url}/auth/self-service/login/api",
             headers={"Accept": "application/json"},

@@ -1,5 +1,5 @@
-import asyncio
 import random
+from asyncio import sleep as _sleep
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Awaitable, Callable
@@ -42,7 +42,7 @@ class ConnhexClient:
     """HTTP client for the Connhex API.
 
     Auth is provided either as a static `token` or, for callers that need
-    per-request token resolution (e.g. multi-user servers), an async
+    per-request token resolution (e.g. multi-user servers), a
     `token_provider` callable invoked on every request.
 
     Transient failures (network errors and HTTP 429/5xx) are retried with
@@ -120,7 +120,7 @@ class ConnhexClient:
                     raise ConnhexAPIError(
                         status=0, detail=f"Network error: {e}"
                     )
-                await asyncio.sleep(self._backoff(attempt))
+                await _sleep(self._backoff(attempt))
                 continue
 
             if (
@@ -130,7 +130,7 @@ class ConnhexClient:
                 delay = _retry_after_seconds(resp)
                 if delay is None:
                     delay = self._backoff(attempt)
-                await asyncio.sleep(delay)
+                await _sleep(delay)
                 continue
 
             raise_for_connhex_response(resp)

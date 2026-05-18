@@ -2,7 +2,7 @@ from typing import Any, Literal
 
 from pydantic import Field
 
-from connhex.schemas import ConnhexBaseModel
+from connhex.schemas._base import ConnhexBaseModel
 
 DecimationFunc = Literal["max", "min", "avg", "sum", "stddev", "variance"]
 DecimationType = Literal["v", "vb"]

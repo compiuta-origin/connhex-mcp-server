@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar
 
-from connhex.schemas import ConnhexBaseModel
+from connhex.schemas._base import ConnhexBaseModel
 
 T = TypeVar("T")
 

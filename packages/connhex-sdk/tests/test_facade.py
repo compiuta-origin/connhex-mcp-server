@@ -4,13 +4,13 @@ import connhex
 import httpx
 import pytest
 from connhex import AsyncConnhex, ConnhexAPIError
-from connhex.iam import IAMService
-from connhex.models import ModelsService
-from connhex.provision import ProvisionService
-from connhex.reader import ReaderService
-from connhex.resources import ResourcesService
-from connhex.rules_engine import RulesEngineService
-from connhex.things import ThingsService
+from connhex.aio.services.iam import IAMService
+from connhex.aio.services.models import ModelsService
+from connhex.aio.services.provision import ProvisionService
+from connhex.aio.services.reader import ReaderService
+from connhex.aio.services.resources import ResourcesService
+from connhex.aio.services.rules_engine import RulesEngineService
+from connhex.aio.services.things import ThingsService
 
 
 def _facade(handler) -> AsyncConnhex:

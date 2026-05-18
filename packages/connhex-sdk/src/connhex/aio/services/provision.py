@@ -1,5 +1,5 @@
-from connhex._base_client import ConnhexClient
-from connhex.provision.schemas import BulkResult, ProvisionData
+from connhex.aio._base_client import ConnhexClient
+from connhex.schemas.provision import BulkResult, ProvisionData
 
 
 class ProvisionService:

@@ -1,5 +1,5 @@
-from connhex._base_client import ConnhexClient
-from connhex.rules_engine.schemas import (
+from connhex.aio._base_client import ConnhexClient
+from connhex.schemas.rules_engine import (
     PagedRuleEvents,
     PagedRules,
     Rule,

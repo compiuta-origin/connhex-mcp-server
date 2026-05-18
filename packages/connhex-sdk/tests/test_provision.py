@@ -4,8 +4,9 @@ import json
 
 import httpx
 import pytest
-from connhex._base_client import ConnhexClient
-from connhex.provision import ProvisionData, ProvisionService
+from connhex.aio._base_client import ConnhexClient
+from connhex.aio.services.provision import ProvisionService
+from connhex.schemas.provision import ProvisionData
 from pydantic import ValidationError
 
 

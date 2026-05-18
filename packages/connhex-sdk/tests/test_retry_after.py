@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 
 import httpx
-from connhex._base_client import _retry_after_seconds
+from connhex.aio._base_client import _retry_after_seconds
 
 
 def _resp(headers: dict[str, str] | None = None) -> httpx.Response:

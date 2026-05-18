@@ -1,9 +1,7 @@
-# Required: the `list` method below shadows the builtin, and `list[str]`
-# annotations on later methods would resolve to it without this import.
 from __future__ import annotations
 
-from connhex._base_client import ConnhexClient
-from connhex.things.schemas import (
+from connhex.aio._base_client import ConnhexClient
+from connhex.schemas.things import (
     BatchStatusRes,
     ChannelsPage,
     FlappingResponse,

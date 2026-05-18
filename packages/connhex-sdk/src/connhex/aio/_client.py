@@ -1,18 +1,18 @@
 import os
 
-from connhex._base_client import (
+from connhex.aio._base_client import (
     MAX_RETRIES,
     TIMEOUT,
     ConnhexClient,
     TokenProvider,
 )
-from connhex.iam import IAMService
-from connhex.models import ModelsService
-from connhex.provision import ProvisionService
-from connhex.reader import ReaderService
-from connhex.resources import ResourcesService
-from connhex.rules_engine import RulesEngineService
-from connhex.things import ThingsService
+from connhex.aio.services.iam import IAMService
+from connhex.aio.services.models import ModelsService
+from connhex.aio.services.provision import ProvisionService
+from connhex.aio.services.reader import ReaderService
+from connhex.aio.services.resources import ResourcesService
+from connhex.aio.services.rules_engine import RulesEngineService
+from connhex.aio.services.things import ThingsService
 
 ENV_INSTANCE_URL = "CONNHEX_INSTANCE_URL"
 ENV_TOKEN = "CONNHEX_BEARER_TOKEN"
@@ -41,7 +41,7 @@ class AsyncConnhex:
 
     - `token`: a static bearer token (personal access token). If omitted,
       the `CONNHEX_BEARER_TOKEN` environment variable is used.
-    - `token_provider`: an async callable returning a fresh token on every
+    - `token_provider`: async callable returning a fresh token on every
       request — for multi-user servers or short-lived tokens.
 
     `instance_url` falls back to the `CONNHEX_INSTANCE_URL` environment

@@ -1,5 +1,5 @@
-from connhex._base_client import ConnhexClient
-from connhex.reader.schemas import (
+from connhex.aio._base_client import ConnhexClient
+from connhex.schemas.reader import (
     DecimationFunc,
     DecimationType,
     MessagesPage,

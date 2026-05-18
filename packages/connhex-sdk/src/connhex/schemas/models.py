@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from connhex.schemas import ConnhexBaseModel
+from connhex.schemas._base import ConnhexBaseModel
 
 
 class Model(ConnhexBaseModel):

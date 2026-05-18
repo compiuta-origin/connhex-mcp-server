@@ -1,7 +1,11 @@
 import logging
 from typing import Literal
 
+import click
+import httpx
 import typer
+from connhex.errors import ConnhexAPIError
+from typer.core import TyperGroup
 
 from connhex_cli import __version__
 from connhex_cli.commands.auth import auth_app
@@ -16,7 +20,31 @@ from connhex_cli.logging_setup import setup_logging
 
 logger = logging.getLogger(__name__)
 
-app = typer.Typer(no_args_is_help=True, rich_markup_mode="rich")
+
+def _format_cli_error(error: Exception) -> str:
+    if isinstance(error, ConnhexAPIError):
+        return f"Connhex API returned {error.status}: {error.detail}"
+    if isinstance(error, httpx.RequestError):
+        return f"Network error: {error}"
+    return str(error)
+
+
+class ConnhexCLIGroup(TyperGroup):
+    def invoke(self, ctx: click.Context):
+        try:
+            return super().invoke(ctx)
+        except (ConnhexAPIError, httpx.RequestError) as e:
+            if ctx.params.get("debug"):
+                raise
+            typer.echo(f"Error: {_format_cli_error(e)}", err=True)
+            raise typer.Exit(1) from e
+
+
+app = typer.Typer(
+    cls=ConnhexCLIGroup,
+    no_args_is_help=True,
+    rich_markup_mode="rich",
+)
 
 app.add_typer(auth_app, name="auth")
 app.add_typer(things_app, name="things")
@@ -48,6 +76,12 @@ def main(
         "--log-config",
         envvar="CONNHEX_LOG_CONFIG",
         help="Path to a JSON logging config file.",
+    ),
+    debug: bool = typer.Option(
+        False,
+        "--debug",
+        envvar="CONNHEX_CLI_DEBUG",
+        help="Show tracebacks for SDK and network errors.",
     ),
     version: bool = typer.Option(
         False,

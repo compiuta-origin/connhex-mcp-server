@@ -60,20 +60,21 @@ def _render_list(items: list) -> None:
 
     first = items[0]
     if isinstance(first, BaseModel):
-        data = first.model_dump()
+        rows = [item.model_dump() for item in items]
+        columns = _columns_for(rows)
         table = Table()
-        for col in data.keys():
+        for col in columns:
             table.add_column(col, overflow="fold")
-        for item in items:
-            row = item.model_dump()
-            table.add_row(*[_fmt_value(row[k]) for k in data.keys()])
+        for row in rows:
+            table.add_row(*[_fmt_value(row.get(k)) for k in columns])
         console.print(table)
     elif isinstance(first, dict):
+        columns = _columns_for(items)
         table = Table()
-        for col in first.keys():
+        for col in columns:
             table.add_column(col, overflow="fold")
         for item in items:
-            table.add_row(*[_fmt_value(item[k]) for k in first.keys()])
+            table.add_row(*[_fmt_value(item.get(k)) for k in columns])
         console.print(table)
     else:
         for item in items:
@@ -87,6 +88,17 @@ def _render_dict(d: dict) -> None:
     for k, v in d.items():
         table.add_row(str(k), _fmt_value(v))
     console.print(Panel(table, expand=False))
+
+
+def _columns_for(rows: list[dict]) -> list[str]:
+    columns: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        for key in row.keys():
+            if key not in seen:
+                seen.add(key)
+                columns.append(key)
+    return columns
 
 
 def _fmt_value(v: Any) -> str:

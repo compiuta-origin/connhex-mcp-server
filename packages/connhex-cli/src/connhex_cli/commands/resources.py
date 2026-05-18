@@ -2,7 +2,7 @@ import json
 
 import typer
 
-from connhex_cli.client import run
+from connhex_cli.client import connhex_client
 from connhex_cli.context import CLIContext
 from connhex_cli.output import render
 
@@ -53,17 +53,15 @@ def list_resources(
             typer.echo(f"Invalid JSON for fields: {e}", err=True)
             raise typer.Exit(1)
 
-    result = run(
-        ctx,
-        lambda c: _svc(c, manufacturing).list(
-            resource_type=resource_type,
-            page_limit=page_limit,
-            page_offset=page_offset,
-            sort=sort,
-            include=include,
-            filter=filter_dict,
-            fields=fields_dict,
-        ),
+    c = connhex_client(ctx)
+    result = _svc(c, manufacturing).list(
+        resource_type=resource_type,
+        page_limit=page_limit,
+        page_offset=page_offset,
+        sort=sort,
+        include=include,
+        filter=filter_dict,
+        fields=fields_dict,
     )
     render(result.data, cli_ctx.output)
 
@@ -78,14 +76,12 @@ def get_resource(
 ) -> None:
     """Get a resource by ID."""
     cli_ctx: CLIContext = ctx.obj
+    c = connhex_client(ctx)
     render(
-        run(
-            ctx,
-            lambda c: _svc(c, manufacturing).get(
-                resource_type=resource_type,
-                ids=resource_id,
-                include=include,
-            ),
+        _svc(c, manufacturing).get(
+            resource_type=resource_type,
+            ids=resource_id,
+            include=include,
         ),
         cli_ctx.output,
     )
@@ -121,11 +117,9 @@ def create_resource(
     if rels:
         payload["data"]["relationships"] = rels
 
+    c = connhex_client(ctx)
     render(
-        run(
-            ctx,
-            lambda c: _svc(c, manufacturing).create(resource_type, payload),
-        ),
+        _svc(c, manufacturing).create(resource_type, payload),
         cli_ctx.output,
     )
 
@@ -154,13 +148,9 @@ def update_resource(
         }
     }
 
+    c = connhex_client(ctx)
     render(
-        run(
-            ctx,
-            lambda c: _svc(c, manufacturing).update(
-                resource_type, resource_id, payload
-            ),
-        ),
+        _svc(c, manufacturing).update(resource_type, resource_id, payload),
         cli_ctx.output,
     )
 
@@ -173,8 +163,6 @@ def delete_resource(
     manufacturing: bool = typer.Option(False, "--manufacturing", "-m"),
 ) -> None:
     """Delete a resource."""
-    run(
-        ctx,
-        lambda c: _svc(c, manufacturing).delete(resource_type, resource_id),
-    )
+    c = connhex_client(ctx)
+    _svc(c, manufacturing).delete(resource_type, resource_id)
     typer.echo(f"Deleted {resource_type}/{resource_id}.")

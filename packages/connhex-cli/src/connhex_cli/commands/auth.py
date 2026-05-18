@@ -1,11 +1,13 @@
-import asyncio
 from datetime import datetime, timedelta, timezone
 
+import httpx
 import typer
+from connhex.sync.auth import password_login
+from connhex.urls import build_accounts_url
 
 from connhex_cli.auth import store
 from connhex_cli.auth.models import StoredCreds
-from connhex_cli.client import run
+from connhex_cli.client import connhex_client
 from connhex_cli.context import CLIContext
 from connhex_cli.output import render
 
@@ -22,40 +24,25 @@ def login(
     ),
 ) -> None:
     """Log in and cache a session token."""
-    from connhex.auth.kratos import kratos_password_login
-    from connhex.urls import build_accounts_url
-
-    accounts_url = build_accounts_url(instance_url)
-
-    async def _login() -> str:
-        return await kratos_password_login(accounts_url, username, password)
-
     try:
-        token = asyncio.run(_login())
+        token = password_login(instance_url, username, password)
     except ValueError as e:
         typer.echo(f"Login failed: {e}", err=True)
         raise typer.Exit(1)
 
-    async def _whoami(tok: str) -> dict:
-        import httpx
-
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(
+    accounts_url = build_accounts_url(instance_url)
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            resp = client.get(
                 f"{accounts_url}/auth/sessions/whoami",
-                headers={"Authorization": f"Bearer {tok}"},
+                headers={"Authorization": f"Bearer {token}"},
             )
             resp.raise_for_status()
-            return resp.json()
-
-    try:
-        session = asyncio.run(_whoami(token))
-        expires_at_raw = session.get("expires_at")
-        if expires_at_raw:
-            expires_at = expires_at_raw
-        else:
-            expires_at = (
-                datetime.now(timezone.utc) + timedelta(hours=24)
-            ).isoformat()
+            session = resp.json()
+        expires_at = (
+            session.get("expires_at")
+            or (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+        )
     except Exception:
         expires_at = (
             datetime.now(timezone.utc) + timedelta(hours=24)
@@ -85,7 +72,8 @@ def logout(ctx: typer.Context) -> None:
 def whoami(ctx: typer.Context) -> None:
     """Show current user info (hits the network)."""
     cli_ctx: CLIContext = ctx.obj
-    render(run(ctx, lambda c: c.iam.whoami()), cli_ctx.output)
+    c = connhex_client(ctx)
+    render(c.iam.whoami(), cli_ctx.output)
 
 
 @auth_app.command()

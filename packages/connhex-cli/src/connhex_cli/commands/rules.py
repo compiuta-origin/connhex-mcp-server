@@ -1,9 +1,9 @@
 import json
 
 import typer
-from connhex.rules_engine import RuleSeverity, RuleStatus
+from connhex.schemas.rules_engine import RuleSeverity, RuleStatus
 
-from connhex_cli.client import run
+from connhex_cli.client import connhex_client
 from connhex_cli.context import CLIContext
 from connhex_cli.output import render
 
@@ -34,18 +34,16 @@ def list_rules(
 ) -> None:
     """List rules."""
     cli_ctx: CLIContext = ctx.obj
-    result = run(
-        ctx,
-        lambda c: c.rules.list_rules(
-            ids=ids,
-            tag_labels=tag_labels,
-            tag_label_values=tag_label_values,
-            severity=severity,
-            status=status,
-            page=page,
-            page_size=page_size,
-            sort=sort,
-        ),
+    c = connhex_client(ctx)
+    result = c.rules.list_rules(
+        ids=ids,
+        tag_labels=tag_labels,
+        tag_label_values=tag_label_values,
+        severity=severity,
+        status=status,
+        page=page,
+        page_size=page_size,
+        sort=sort,
     )
     render(result.results, cli_ctx.output)
 
@@ -54,7 +52,8 @@ def list_rules(
 def get_rule(ctx: typer.Context, rule_id: str = typer.Argument(...)) -> None:
     """Get a rule by ID."""
     cli_ctx: CLIContext = ctx.obj
-    render(run(ctx, lambda c: c.rules.get_rule(rule_id)), cli_ctx.output)
+    c = connhex_client(ctx)
+    render(c.rules.get_rule(rule_id), cli_ctx.output)
 
 
 @rules_app.command("create")
@@ -69,7 +68,8 @@ def create_rule(
     except json.JSONDecodeError as e:
         typer.echo(f"Invalid JSON: {e}", err=True)
         raise typer.Exit(1)
-    render(run(ctx, lambda c: c.rules.create_rule(data)), cli_ctx.output)
+    c = connhex_client(ctx)
+    render(c.rules.create_rule(data), cli_ctx.output)
 
 
 @rules_app.command("update")
@@ -85,16 +85,15 @@ def update_rule(
     except json.JSONDecodeError as e:
         typer.echo(f"Invalid JSON: {e}", err=True)
         raise typer.Exit(1)
-    render(
-        run(ctx, lambda c: c.rules.update_rule(rule_id, data)),
-        cli_ctx.output,
-    )
+    c = connhex_client(ctx)
+    render(c.rules.update_rule(rule_id, data), cli_ctx.output)
 
 
 @rules_app.command("delete")
 def delete_rule(ctx: typer.Context, rule_id: str = typer.Argument(...)) -> None:
     """Delete a rule."""
-    run(ctx, lambda c: c.rules.delete_rule(rule_id))
+    c = connhex_client(ctx)
+    c.rules.delete_rule(rule_id)
     typer.echo(f"Rule {rule_id} deleted.")
 
 
@@ -113,16 +112,14 @@ def list_events(
 ) -> None:
     """List rule events."""
     cli_ctx: CLIContext = ctx.obj
-    result = run(
-        ctx,
-        lambda c: c.rules.list_rule_events(
-            rule_ids=rule_ids,
-            from_date=from_date,
-            to_date=to_date,
-            status=status,
-            page=page,
-            page_size=page_size,
-            sort=sort,
-        ),
+    c = connhex_client(ctx)
+    result = c.rules.list_rule_events(
+        rule_ids=rule_ids,
+        from_date=from_date,
+        to_date=to_date,
+        status=status,
+        page=page,
+        page_size=page_size,
+        sort=sort,
     )
     render(result.results, cli_ctx.output)

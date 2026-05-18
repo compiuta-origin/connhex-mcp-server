@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
 
+import httpx
 import pytest
-from typer.testing import CliRunner
-
-from connhex_cli.main import app
 from connhex_cli.auth import store as auth_store
+from connhex_cli.commands import auth as auth_cmd
+from connhex_cli.main import app
+from typer.testing import CliRunner
 
 runner = CliRunner()
 
@@ -18,34 +18,50 @@ def tmp_config(tmp_path, monkeypatch):
     )
 
 
-def test_login_writes_credentials():
+def _install_fakes(monkeypatch, token: str, session: dict) -> None:
+    monkeypatch.setattr(auth_cmd, "password_login", lambda url, u, p: token)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/auth/sessions/whoami"
+        return httpx.Response(200, json=session)
+
+    real_client = httpx.Client
+
+    def factory(*args, **kwargs):
+        kwargs["transport"] = httpx.MockTransport(handler)
+        return real_client(*args, **kwargs)
+
+    monkeypatch.setattr(auth_cmd.httpx, "Client", factory)
+
+
+def test_login_writes_credentials(monkeypatch):
     fake_token = "ory_st_faketoken"
     fake_expires = (
         datetime.now(timezone.utc) + timedelta(hours=24)
     ).isoformat()
 
-    session_payload = {
-        "identity": {"traits": {"email": "user@example.com"}},
-        "expires_at": fake_expires,
-    }
+    _install_fakes(
+        monkeypatch,
+        fake_token,
+        {
+            "identity": {"traits": {"email": "user@example.com"}},
+            "expires_at": fake_expires,
+        },
+    )
 
-    with patch(
-        "connhex_cli.commands.auth.asyncio.run",
-        side_effect=[fake_token, session_payload],
-    ):
-        result = runner.invoke(
-            app,
-            [
-                "auth",
-                "login",
-                "--instance-url",
-                "https://compiuta.connhex.dev",
-                "--username",
-                "user@example.com",
-                "--password",
-                "secret",
-            ],
-        )
+    result = runner.invoke(
+        app,
+        [
+            "auth",
+            "login",
+            "--instance-url",
+            "https://compiuta.connhex.dev",
+            "--username",
+            "user@example.com",
+            "--password",
+            "secret",
+        ],
+    )
 
     assert result.exit_code == 0, result.output
     creds = auth_store.load()
@@ -65,23 +81,21 @@ def test_login_prints_plaintext_warning(tmp_path, monkeypatch):
         datetime.now(timezone.utc) + timedelta(hours=24)
     ).isoformat()
 
-    with patch(
-        "connhex_cli.commands.auth.asyncio.run",
-        side_effect=[fake_token, {"expires_at": fake_expires}],
-    ):
-        result = runner.invoke(
-            app,
-            [
-                "auth",
-                "login",
-                "--instance-url",
-                "https://compiuta.connhex.dev",
-                "--username",
-                "user@example.com",
-                "--password",
-                "secret",
-            ],
-        )
+    _install_fakes(monkeypatch, fake_token, {"expires_at": fake_expires})
+
+    result = runner.invoke(
+        app,
+        [
+            "auth",
+            "login",
+            "--instance-url",
+            "https://compiuta.connhex.dev",
+            "--username",
+            "user@example.com",
+            "--password",
+            "secret",
+        ],
+    )
 
     assert result.exit_code == 0, result.output
     assert "plaintext" in result.output

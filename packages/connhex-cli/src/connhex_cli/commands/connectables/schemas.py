@@ -1,6 +1,6 @@
 from typing import Any
 
-from connhex.provision import ProvisionData
+from connhex.schemas.provision import ProvisionData
 from connhex.schemas import ConnhexBaseModel
 from pydantic import Field, ValidationInfo, model_validator
 

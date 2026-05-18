@@ -1,8 +1,8 @@
 import typer
 from connhex.errors import ConnhexAPIError
-from connhex.reader import DecimationFunc, DecimationType, ReadFormat
+from connhex.schemas.reader import DecimationFunc, DecimationType, ReadFormat
 
-from connhex_cli.client import run
+from connhex_cli.client import connhex_client
 from connhex_cli.context import CLIContext
 from connhex_cli.output import render
 
@@ -34,21 +34,19 @@ def channel_messages(
 ) -> None:
     """Read messages from a channel."""
     cli_ctx: CLIContext = ctx.obj
-    result = run(
-        ctx,
-        lambda c: c.reader.read_messages(
-            channel_id=channel_id,
-            limit=limit,
-            offset=offset,
-            from_s=from_s,
-            to_s=to_s,
-            publisher=publisher,
-            name=name,
-            format=format,
-            ds=ds,
-            dsf=dsf,
-            dsv=dsv,
-        ),
+    c = connhex_client(ctx)
+    result = c.reader.read_messages(
+        channel_id=channel_id,
+        limit=limit,
+        offset=offset,
+        from_s=from_s,
+        to_s=to_s,
+        publisher=publisher,
+        name=name,
+        format=format,
+        ds=ds,
+        dsf=dsf,
+        dsv=dsv,
     )
     render(result, cli_ctx.output)
 
@@ -78,36 +76,34 @@ def thing_messages(
 ) -> None:
     """Read messages for a thing (resolves channel automatically)."""
     cli_ctx: CLIContext = ctx.obj
+    c = connhex_client(ctx)
 
-    async def _fn(c):
-        thing = await c.things.get(thing_id)
-        metadata = thing.metadata
-        if isinstance(metadata, dict):
-            channel_id = metadata.get("event_channel_id")
-        elif metadata is not None:
-            channel_id = metadata.event_channel_id
-        else:
-            channel_id = None
+    thing = c.things.get(thing_id)
+    metadata = thing.metadata
+    if isinstance(metadata, dict):
+        channel_id = metadata.get("event_channel_id")
+    elif metadata is not None:
+        channel_id = metadata.event_channel_id
+    else:
+        channel_id = None
 
-        if not channel_id:
-            raise ConnhexAPIError(
-                status=404,
-                detail=f"Thing {thing_id} has no 'event_channel_id' in metadata.",
-            )
-
-        return await c.reader.read_messages(
-            channel_id=channel_id,
-            headers={},
-            limit=limit,
-            offset=offset,
-            from_s=from_s,
-            to_s=to_s,
-            publisher=publisher,
-            name=name,
-            format=format,
-            ds=ds,
-            dsf=dsf,
-            dsv=dsv,
+    if not channel_id:
+        raise ConnhexAPIError(
+            status=404,
+            detail=f"Thing {thing_id} has no 'event_channel_id' in metadata.",
         )
 
-    render(run(ctx, _fn), cli_ctx.output)
+    result = c.reader.read_messages(
+        channel_id=channel_id,
+        limit=limit,
+        offset=offset,
+        from_s=from_s,
+        to_s=to_s,
+        publisher=publisher,
+        name=name,
+        format=format,
+        ds=ds,
+        dsf=dsf,
+        dsv=dsv,
+    )
+    render(result, cli_ctx.output)

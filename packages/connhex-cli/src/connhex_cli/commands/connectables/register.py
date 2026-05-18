@@ -11,8 +11,8 @@ Steps:
 
 import typer
 from connhex.errors import ConnhexAPIError
-from connhex.provision import ProvisionService
-from connhex.resources import ResourcesService
+from connhex.sync.services.provision import ProvisionService
+from connhex.sync.services.resources import ResourcesService
 
 from connhex_cli.commands.connectables.casing import snake_to_camel
 from connhex_cli.commands.connectables.loader import load
@@ -62,7 +62,7 @@ def _manufacturing_payload(
     }
 
 
-async def run(
+def run(
     source: str,
     fmt: str | None,
     *,
@@ -81,7 +81,7 @@ async def run(
     serial_field = snake_to_camel(serial_field)
     connhex_field = snake_to_camel(connhex_field)
 
-    schema_doc = await manufacturing_svc.get_schema()
+    schema_doc = manufacturing_svc.get_schema()
     schema_attrs = _extract_schema_attrs(schema_doc, schema)
 
     batch = ConnectablesBatch.model_validate(
@@ -93,9 +93,7 @@ async def run(
         },
     )
 
-    bulk = await provision_svc.bulk_provision(
-        [c.provision for c in batch.items]
-    )
+    bulk = provision_svc.bulk_provision([c.provision for c in batch.items])
 
     if bulk.failed:
         raise typer.BadParameter(
@@ -118,10 +116,10 @@ async def run(
                 serial_field=serial_field,
                 connhex_field=connhex_field,
             )
-            await manufacturing_svc.create(schema, payload)
+            manufacturing_svc.create(schema, payload)
             created.append(thing.id)
     except ConnhexAPIError as e:
-        await provision_svc.bulk_unprovision([t.id for t in bulk.things])
+        provision_svc.bulk_unprovision([t.id for t in bulk.things])
         raise typer.BadParameter(
             f"manufacturing create failed after {len(created)}/"
             f"{len(bulk.things)} records; rolled back all provisioned "

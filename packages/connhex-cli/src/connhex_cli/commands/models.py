@@ -1,6 +1,6 @@
 import typer
 
-from connhex_cli.client import run
+from connhex_cli.client import connhex_client
 from connhex_cli.context import CLIContext
 from connhex_cli.output import render
 
@@ -20,17 +20,15 @@ def list_models(
 ) -> None:
     """List device models."""
     cli_ctx: CLIContext = ctx.obj
-    result = run(
-        ctx,
-        lambda c: c.models.list(
-            limit=limit,
-            offset=offset,
-            name=name,
-            order=order,
-            dir=dir,
-            tag=tag,
-            tenant=tenant,
-        ),
+    c = connhex_client(ctx)
+    result = c.models.list(
+        limit=limit,
+        offset=offset,
+        name=name,
+        order=order,
+        dir=dir,
+        tag=tag,
+        tenant=tenant,
     )
     render(result.models, cli_ctx.output)
 
@@ -39,7 +37,8 @@ def list_models(
 def get_model(ctx: typer.Context, model_id: str = typer.Argument(...)) -> None:
     """Get a device model by ID."""
     cli_ctx: CLIContext = ctx.obj
-    render(run(ctx, lambda c: c.models.get(model_id)), cli_ctx.output)
+    c = connhex_client(ctx)
+    render(c.models.get(model_id), cli_ctx.output)
 
 
 @models_app.command("things")
@@ -53,10 +52,8 @@ def model_things(
 ) -> None:
     """List things assigned to a model."""
     cli_ctx: CLIContext = ctx.obj
-    result = run(
-        ctx,
-        lambda c: c.models.get_things(
-            model_id, limit=limit, offset=offset, order=order, dir=dir
-        ),
+    c = connhex_client(ctx)
+    result = c.models.get_things(
+        model_id, limit=limit, offset=offset, order=order, dir=dir
     )
     render(result.things, cli_ctx.output)

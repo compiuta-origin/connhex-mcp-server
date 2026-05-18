@@ -1,4 +1,3 @@
-import asyncio
 import json
 from pathlib import Path
 from typing import Any
@@ -6,7 +5,7 @@ from typing import Any
 import pytest
 import typer
 from connhex.errors import ConnhexAPIError
-from connhex.provision import BulkResult, ProvisionedThing
+from connhex.schemas.provision import BulkResult, ProvisionedThing
 from connhex_cli.commands.connectables import register
 
 FIXTURE = Path(__file__).parent / "fixtures" / "test_provision.csv"
@@ -18,11 +17,11 @@ class FakeProvisionSvc:
         self.provisioned: list = []
         self.unprovisioned: list[str] | None = None
 
-    async def bulk_provision(self, items):
+    def bulk_provision(self, items):
         self.provisioned = list(items)
         return self._bulk
 
-    async def bulk_unprovision(self, ids):
+    def bulk_unprovision(self, ids):
         self.unprovisioned = list(ids)
 
 
@@ -32,10 +31,10 @@ class FakeManufacturingSvc:
         self.fail_on = fail_on
         self.creates: list[dict] = []
 
-    async def get_schema(self) -> dict:
+    def get_schema(self) -> dict:
         return self.schema
 
-    async def create(self, resource_type: str, data: dict):
+    def create(self, resource_type: str, data: dict):
         if self.fail_on is not None and len(self.creates) == self.fail_on:
             raise ConnhexAPIError(status=500, detail="boom")
         self.creates.append({"type": resource_type, "data": data})
@@ -63,16 +62,14 @@ def _bulk(n: int) -> BulkResult:
 def test_happy_path_csv() -> None:
     prov = FakeProvisionSvc(_bulk(4))
     mfg = FakeManufacturingSvc(SCHEMA)
-    result = asyncio.run(
-        register.run(
-            str(FIXTURE),
-            None,
-            schema="devices",
-            serial_field="serialNumber",
-            connhex_field="connhexId",
-            provision_svc=prov,
-            manufacturing_svc=mfg,
-        )
+    result = register.run(
+        str(FIXTURE),
+        None,
+        schema="devices",
+        serial_field="serialNumber",
+        connhex_field="connhexId",
+        provision_svc=prov,
+        manufacturing_svc=mfg,
     )
     assert result["registered"] == 4
     assert len(prov.provisioned) == 4
@@ -89,16 +86,14 @@ def test_rollback_on_manufacturing_failure() -> None:
     prov = FakeProvisionSvc(_bulk(4))
     mfg = FakeManufacturingSvc(SCHEMA, fail_on=2)
     with pytest.raises(typer.BadParameter, match="rolled back"):
-        asyncio.run(
-            register.run(
-                str(FIXTURE),
-                None,
-                schema="devices",
-                serial_field="serialNumber",
-                connhex_field="connhexId",
-                provision_svc=prov,
-                manufacturing_svc=mfg,
-            )
+        register.run(
+            str(FIXTURE),
+            None,
+            schema="devices",
+            serial_field="serialNumber",
+            connhex_field="connhexId",
+            provision_svc=prov,
+            manufacturing_svc=mfg,
         )
     assert prov.unprovisioned == ["id-0", "id-1", "id-2", "id-3"]
 
@@ -107,16 +102,14 @@ def test_unknown_schema_type_fails_with_hint() -> None:
     prov = FakeProvisionSvc(_bulk(4))
     mfg = FakeManufacturingSvc(SCHEMA)
     with pytest.raises(typer.BadParameter, match="Available: devices"):
-        asyncio.run(
-            register.run(
-                str(FIXTURE),
-                None,
-                schema="device",  # schema doc has "devices"
-                serial_field="serialNumber",
-                connhex_field="connhexId",
-                provision_svc=prov,
-                manufacturing_svc=mfg,
-            )
+        register.run(
+            str(FIXTURE),
+            None,
+            schema="device",  # schema doc has "devices"
+            serial_field="serialNumber",
+            connhex_field="connhexId",
+            provision_svc=prov,
+            manufacturing_svc=mfg,
         )
     assert prov.provisioned == []  # no API call before schema check
 
@@ -136,16 +129,14 @@ def test_tenant_emitted_as_attribute(tmp_path: Path) -> None:
     )
     prov = FakeProvisionSvc(_bulk(1))
     mfg = FakeManufacturingSvc(SCHEMA)
-    asyncio.run(
-        register.run(
-            str(src),
-            None,
-            schema="devices",
-            serial_field="serialNumber",
-            connhex_field="connhexId",
-            provision_svc=prov,
-            manufacturing_svc=mfg,
-        )
+    register.run(
+        str(src),
+        None,
+        schema="devices",
+        serial_field="serialNumber",
+        connhex_field="connhexId",
+        provision_svc=prov,
+        manufacturing_svc=mfg,
     )
     payload = mfg.creates[0]["data"]["data"]
     assert payload["attributes"]["tenants"] == ["tenant-a"]

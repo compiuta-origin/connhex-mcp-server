@@ -7,5 +7,6 @@ except PackageNotFoundError:
 
 from connhex.aio._client import AsyncConnhex  # noqa: E402
 from connhex.errors import ConnhexAPIError  # noqa: E402
+from connhex.sync._client import Connhex  # noqa: E402
 
-__all__ = ["AsyncConnhex", "ConnhexAPIError", "__version__"]
+__all__ = ["AsyncConnhex", "Connhex", "ConnhexAPIError", "__version__"]

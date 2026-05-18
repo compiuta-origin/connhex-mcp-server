@@ -8,6 +8,13 @@ repos:
 
   - repo: local
     hooks:
+      - id: generate-sync
+        name: regenerate connhex-sdk sync/ from aio/
+        entry: uv run python packages/connhex-sdk/scripts/generate_sync.py
+        language: system
+        files: ^packages/connhex-sdk/src/connhex/aio/
+        pass_filenames: false
+
       - id: pytest
         name: pytest
         entry: uv run python -m pytest

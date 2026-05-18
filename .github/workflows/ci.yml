@@ -11,6 +11,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --group dev
+      - name: Verify connhex-sdk sync/ is in sync with aio/
+        run: |
+          uv run python packages/connhex-sdk/scripts/generate_sync.py
+          git diff --exit-code packages/connhex-sdk/src/connhex/sync/ \
+            || (echo "::error::sync/ is stale, run scripts/generate_sync.py" && exit 1)
       - run: uv run ruff check .
       - run: uv run ruff format --check .
 

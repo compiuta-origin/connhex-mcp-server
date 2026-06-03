@@ -7,7 +7,11 @@ from typing import Awaitable, Callable
 import httpx
 
 from connhex import __version__
-from connhex.errors import ConnhexAPIError, raise_for_connhex_response
+from connhex.errors import (
+    APIConnectionError,
+    APITimeoutError,
+    raise_for_connhex_response,
+)
 from connhex.urls import build_url
 
 TIMEOUT = 30.0
@@ -115,11 +119,18 @@ class ConnhexClient:
                 resp = await self._http.request(
                     method, url, headers=headers, **kwargs
                 )
+            except httpx.TimeoutException as e:
+                if attempt == self._max_retries:
+                    raise APITimeoutError(
+                        f"Request timed out: {e}", cause=e
+                    ) from e
+                await _sleep(self._backoff(attempt))
+                continue
             except httpx.RequestError as e:
                 if attempt == self._max_retries:
-                    raise ConnhexAPIError(
-                        status=0, detail=f"Network error: {e}"
-                    )
+                    raise APIConnectionError(
+                        f"Network error: {e}", cause=e
+                    ) from e
                 await _sleep(self._backoff(attempt))
                 continue
 
@@ -137,7 +148,7 @@ class ConnhexClient:
             return resp
 
         # Unreachable: loop always returns or raises.
-        raise ConnhexAPIError(status=0, detail="retry loop exhausted")
+        raise APIConnectionError("retry loop exhausted")
 
     async def close(self) -> None:
         await self._http.aclose()

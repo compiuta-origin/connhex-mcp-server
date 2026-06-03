@@ -5,7 +5,12 @@ from itertools import count
 import httpx
 import pytest
 from connhex.aio._base_client import ConnhexClient
-from connhex.errors import ConnhexAPIError
+from connhex.errors import (
+    APIConnectionError,
+    APITimeoutError,
+    ConnhexAPIError,
+    ConnhexError,
+)
 
 
 def _make_client(monkeypatch, handler, *, max_retries=2, **kwargs):
@@ -112,6 +117,35 @@ async def test_network_error_retried_then_succeeds(monkeypatch):
     client, sleeps = _make_client(monkeypatch, handler)
     resp = await client.request("GET", "/x")
     assert resp.status_code == 200
+    assert len(sleeps) == 1
+    await client.close()
+
+
+@pytest.mark.asyncio
+async def test_network_error_exhausts_retries(monkeypatch):
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("nope", request=request)
+
+    client, sleeps = _make_client(monkeypatch, handler, max_retries=1)
+    with pytest.raises(APIConnectionError) as ei:
+        await client.request("GET", "/x")
+    assert isinstance(ei.value, ConnhexError)
+    assert not isinstance(ei.value, ConnhexAPIError)
+    assert isinstance(ei.value.cause, httpx.ConnectError)
+    assert len(sleeps) == 1
+    await client.close()
+
+
+@pytest.mark.asyncio
+async def test_timeout_error_exhausts_retries(monkeypatch):
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("slow", request=request)
+
+    client, sleeps = _make_client(monkeypatch, handler, max_retries=1)
+    with pytest.raises(APITimeoutError) as ei:
+        await client.request("GET", "/x")
+    assert isinstance(ei.value, APIConnectionError)
+    assert isinstance(ei.value.cause, httpx.ReadTimeout)
     assert len(sleeps) == 1
     await client.close()
 

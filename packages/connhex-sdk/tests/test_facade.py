@@ -3,7 +3,20 @@
 import connhex
 import httpx
 import pytest
-from connhex import AsyncConnhex, ConnhexAPIError
+from connhex import (
+    APIConnectionError,
+    APITimeoutError,
+    AsyncConnhex,
+    AuthenticationError,
+    ConflictError,
+    ConnhexAPIError,
+    ConnhexError,
+    InternalServerError,
+    NotFoundError,
+    PermissionDeniedError,
+    RateLimitError,
+    UnprocessableEntityError,
+)
 from connhex.aio.services.iam import IAMService
 from connhex.aio.services.models import ModelsService
 from connhex.aio.services.provision import ProvisionService
@@ -26,6 +39,16 @@ def _facade(handler) -> AsyncConnhex:
 def test_top_level_exports():
     assert AsyncConnhex is connhex.AsyncConnhex
     assert ConnhexAPIError is connhex.ConnhexAPIError
+    assert ConnhexError is connhex.ConnhexError
+    assert AuthenticationError is connhex.AuthenticationError
+    assert PermissionDeniedError is connhex.PermissionDeniedError
+    assert NotFoundError is connhex.NotFoundError
+    assert ConflictError is connhex.ConflictError
+    assert UnprocessableEntityError is connhex.UnprocessableEntityError
+    assert RateLimitError is connhex.RateLimitError
+    assert InternalServerError is connhex.InternalServerError
+    assert APIConnectionError is connhex.APIConnectionError
+    assert APITimeoutError is connhex.APITimeoutError
     assert isinstance(connhex.__version__, str)
 
 

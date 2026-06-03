@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+from connhex.urls import DEFAULT_INSTANCE_URL
 from connhex_mcp.auth import remote
 from connhex_mcp.auth.remote import (
     RENEWAL_IDLE_TTL,
@@ -16,6 +17,16 @@ def make_settings() -> MCPSettings:
         instance_url="https://compiuta.connhex.dev",
         public_url="https://mcp.compiuta.connhex.dev",
     )
+
+
+def test_settings_default_to_saas_instance_url(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delenv("CONNHEX_INSTANCE_URL", raising=False)
+
+    settings = MCPSettings()
+
+    assert str(settings.instance_url).rstrip("/") == DEFAULT_INSTANCE_URL
 
 
 def add_renewal_record(

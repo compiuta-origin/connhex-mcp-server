@@ -1,10 +1,14 @@
-"""URL builders for a Connhex deployment.
+"""URL builders for Connhex deployments.
 
-A Connhex instance is served from a single root domain (the "instance URL",
-e.g. ``https://acme.connhex.com``). Each Connhex subsystem lives on a
-dedicated subdomain of that root: the public APIs on ``apis.<host>``, the
-identity / account flows on ``accounts.<host>``, and so on. The helpers in
-this module take an instance URL and return the right per-subsystem URL.
+By default, SDK clients target the Connhex SaaS instance at
+``https://connhex.com``. Custom, staging, private, or self-hosted deployments
+can provide their own instance URL.
+
+A Connhex instance is served from a single root domain (the "instance URL").
+Each Connhex subsystem lives on a dedicated subdomain of that root: the public
+APIs on ``apis.<host>``, the identity / account flows on ``accounts.<host>``,
+and so on. The helpers in this module take an instance URL and return the
+right per-subsystem URL.
 
 Most users of the SDK never need to call these — :class:`AsyncConnhex`
 handles URL construction internally. They are exposed publicly for code
@@ -18,19 +22,22 @@ the standard request path, for example:
 
 All helpers accept an ``instance_url`` with an explicit scheme and host
 (trailing slashes are tolerated) and raise :class:`ValueError` on malformed
-input. They are pure functions — no network calls, no caching.
+input. ``DEFAULT_INSTANCE_URL`` exposes the SDK's default SaaS root. The
+helpers are pure functions — no network calls, no caching.
 
 Example:
 
-    >>> build_apis_url("https://acme.connhex.com/")
-    'https://apis.acme.connhex.com'
-    >>> build_accounts_url("https://acme.connhex.com")
-    'https://accounts.acme.connhex.com'
-    >>> build_url("https://acme.connhex.com", "apis")
-    'https://apis.acme.connhex.com'
+    >>> build_apis_url("https://connhex.com/")
+    'https://apis.connhex.com'
+    >>> build_accounts_url("https://connhex.com")
+    'https://accounts.connhex.com'
+    >>> build_url("https://connhex.com", "apis")
+    'https://apis.connhex.com'
 """
 
 from urllib.parse import urlsplit
+
+DEFAULT_INSTANCE_URL = "https://connhex.com"
 
 
 def _parts(instance_url: str) -> tuple[str, str]:

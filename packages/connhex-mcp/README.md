@@ -27,7 +27,6 @@ Add the server to your MCP client configuration.
         "connhex-mcp"
       ],
       "env": {
-        "CONNHEX_INSTANCE_URL": "<connhex-instance-url>",
         "CONNHEX_USERNAME": "your-email@example.com",
         "CONNHEX_PASSWORD": "your-password"
       }
@@ -38,7 +37,7 @@ Add the server to your MCP client configuration.
 
 ### Authentication
 
-The server requires `CONNHEX_INSTANCE_URL` set to the base URL of the Connhex instance you want to connect to.
+The server connects to `https://connhex.com` by default. Set `CONNHEX_INSTANCE_URL` only when you need to target staging, private, or self-hosted deployments.
 
 Authentication is configured via `CONNHEX_AUTH_TYPE` (defaults to `credentials`):
 
@@ -217,7 +216,6 @@ Manage rules and inspect triggered rule events.
 You can test the server locally using [MCP Inspector](https://github.com/modelcontextprotocol/inspector) (requires Node.js):
 
 ```bash
-export CONNHEX_INSTANCE_URL=<connhex-instance-url>
 export CONNHEX_USERNAME=your-email@example.com
 export CONNHEX_PASSWORD=your-password
 ./scripts/start-mcp-inspector.sh
@@ -226,7 +224,6 @@ export CONNHEX_PASSWORD=your-password
 For token-based auth:
 
 ```bash
-export CONNHEX_INSTANCE_URL=<connhex-instance-url>
 export CONNHEX_AUTH_TYPE=token
 export CONNHEX_BEARER_TOKEN=your-token
 ./scripts/start-mcp-inspector.sh
@@ -261,7 +258,7 @@ uv run ruff check .
 
 The Connhex MCP Server acts as a proxy between AI clients and a Connhex instance. It does not collect, store, or process data on its own behalf.
 
-**Data handling:** All requests are forwarded exclusively to the Connhex instance URL configured by the operator (`CONNHEX_INSTANCE_URL`). No data is sent to any other third party.
+**Data handling:** All requests are forwarded exclusively to the configured Connhex instance URL, defaulting to `https://connhex.com`. Set `CONNHEX_INSTANCE_URL` to target a different Connhex deployment. No data is sent to any other third party.
 
 **Third-party services:** The server communicates only with the configured Connhex instance. No analytics, telemetry, or tracking services are used.
 

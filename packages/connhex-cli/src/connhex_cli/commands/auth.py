@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import httpx
 import typer
 from connhex.sync.auth import password_login
-from connhex.urls import build_accounts_url
+from connhex.urls import DEFAULT_INSTANCE_URL, build_accounts_url
 
 from connhex_cli.auth import store
 from connhex_cli.auth.models import StoredCreds
@@ -17,7 +17,9 @@ auth_app = typer.Typer(help="Authentication commands.")
 @auth_app.command()
 def login(
     ctx: typer.Context,
-    instance_url: str = typer.Option(..., prompt="Instance URL"),
+    instance_url: str = typer.Option(
+        DEFAULT_INSTANCE_URL, prompt="Instance URL"
+    ),
     username: str = typer.Option(..., prompt="Username"),
     password: str = typer.Option(
         ..., prompt=True, hide_input=True, confirmation_prompt=False

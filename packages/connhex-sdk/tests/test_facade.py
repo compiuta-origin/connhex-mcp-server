@@ -11,6 +11,7 @@ from connhex.aio.services.reader import ReaderService
 from connhex.aio.services.resources import ResourcesService
 from connhex.aio.services.rules_engine import RulesEngineService
 from connhex.aio.services.things import ThingsService
+from connhex.urls import DEFAULT_INSTANCE_URL
 
 
 def _facade(handler) -> AsyncConnhex:
@@ -78,10 +79,10 @@ def test_explicit_args_override_env(monkeypatch):
     assert c._http._token == "arg-tok"
 
 
-def test_missing_instance_url_raises(monkeypatch):
+def test_default_instance_url(monkeypatch):
     monkeypatch.delenv("CONNHEX_INSTANCE_URL", raising=False)
-    with pytest.raises(ValueError, match="instance_url is required"):
-        AsyncConnhex(token="t")
+    c = AsyncConnhex(token="t")
+    assert c._http.instance_url == DEFAULT_INSTANCE_URL
 
 
 @pytest.mark.asyncio

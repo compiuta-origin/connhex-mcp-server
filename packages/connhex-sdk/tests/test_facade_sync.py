@@ -11,6 +11,7 @@ from connhex.sync.services.reader import ReaderService
 from connhex.sync.services.resources import ResourcesService
 from connhex.sync.services.rules_engine import RulesEngineService
 from connhex.sync.services.things import ThingsService
+from connhex.urls import DEFAULT_INSTANCE_URL
 
 
 def _facade(handler) -> Connhex:
@@ -84,10 +85,10 @@ def test_env_fallback_instance_url_and_token(monkeypatch):
     assert c._http._token == "env-tok"
 
 
-def test_missing_instance_url_raises(monkeypatch):
+def test_default_instance_url(monkeypatch):
     monkeypatch.delenv("CONNHEX_INSTANCE_URL", raising=False)
-    with pytest.raises(ValueError, match="instance_url is required"):
-        Connhex(token="t")
+    c = Connhex(token="t")
+    assert c._http.instance_url == DEFAULT_INSTANCE_URL
 
 
 def test_token_and_token_provider_mutually_exclusive():

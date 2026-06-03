@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Required
-: "${CONNHEX_INSTANCE_URL:?Set CONNHEX_INSTANCE_URL}"
-
+CONNHEX_INSTANCE_URL="${CONNHEX_INSTANCE_URL:-https://connhex.com}"
 CONNHEX_AUTH_TYPE="${CONNHEX_AUTH_TYPE:-credentials}"
 
 env_args=(

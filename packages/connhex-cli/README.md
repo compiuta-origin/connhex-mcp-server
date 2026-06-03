@@ -42,7 +42,7 @@ Then run via `uv run connhex-cli` or activate the venv and use `connhex-cli` dir
 connhex-cli auth login
 ```
 
-Prompts for your instance URL, username, and password. On success the session token is cached at `~/.connhex/credentials.json` (mode `0600`). All subsequent commands reuse it until it expires.
+Prompts for your instance URL, username, and password. The instance URL defaults to `https://connhex.com`; edit it only for staging, private, or self-hosted deployments. On success the session token is cached at `~/.connhex/credentials.json` (mode `0600`). All subsequent commands reuse it until it expires.
 
 ```bash
 connhex-cli auth status   # show cached token info without hitting the network
@@ -61,15 +61,16 @@ CONNHEX_BEARER_TOKEN=ory_st_... connhex-cli things list
 ```
 
 When `--token` / `CONNHEX_BEARER_TOKEN` is set the credential store is ignored entirely.
+Commands target `https://connhex.com` by default unless you pass an instance URL override.
 
 ### Instance URL
 
-The instance URL is saved by `login` and reused automatically. You can override it per-command:
+The instance URL defaults to `https://connhex.com`. `login` saves the URL you use and reuses it automatically. You can override it per-command:
 
 ```bash
-connhex-cli --instance-url https://acme.connhex.dev things list
+connhex-cli --instance-url https://staging.connhex.example things list
 # or
-CONNHEX_INSTANCE_URL=https://acme.connhex.dev connhex-cli things list
+CONNHEX_INSTANCE_URL=https://staging.connhex.example connhex-cli things list
 ```
 
 ## Global options

@@ -13,6 +13,7 @@ from connhex.aio.services.reader import ReaderService
 from connhex.aio.services.resources import ResourcesService
 from connhex.aio.services.rules_engine import RulesEngineService
 from connhex.aio.services.things import ThingsService
+from connhex.urls import DEFAULT_INSTANCE_URL
 
 ENV_INSTANCE_URL = "CONNHEX_INSTANCE_URL"
 ENV_TOKEN = "CONNHEX_BEARER_TOKEN"
@@ -29,7 +30,6 @@ class AsyncConnhex:
         from connhex import AsyncConnhex
 
         async with AsyncConnhex(
-            instance_url="https://your-tenant.connhex.com",
             token="<personal access token>",
         ) as connhex:
             me = await connhex.iam.whoami()
@@ -45,7 +45,8 @@ class AsyncConnhex:
       request — for multi-user servers or short-lived tokens.
 
     `instance_url` falls back to the `CONNHEX_INSTANCE_URL` environment
-    variable when omitted.
+    variable when omitted, then to the Connhex SaaS instance at
+    `https://connhex.com`.
 
     Lifecycle. Always close the client to release the underlying connection
     pool. The recommended form is `async with AsyncConnhex(...) as c: ...`;
@@ -58,7 +59,7 @@ class AsyncConnhex:
     Args:
         instance_url: Base URL of your Connhex tenant, e.g.
             `"https://your-tenant.connhex.com"`. Falls back to
-            `$CONNHEX_INSTANCE_URL`.
+            `$CONNHEX_INSTANCE_URL`, then `https://connhex.com`.
         token: Static bearer token. Falls back to `$CONNHEX_BEARER_TOKEN`.
             Mutually exclusive with `token_provider`.
         token_provider: Async callable resolving a bearer token per request.
@@ -76,12 +77,11 @@ class AsyncConnhex:
         timeout: float = TIMEOUT,
         max_retries: int = MAX_RETRIES,
     ) -> None:
-        instance_url = instance_url or os.environ.get(ENV_INSTANCE_URL)
-        if not instance_url:
-            raise ValueError(
-                "instance_url is required "
-                f"(pass it explicitly or set ${ENV_INSTANCE_URL})"
-            )
+        instance_url = (
+            instance_url
+            or os.environ.get(ENV_INSTANCE_URL)
+            or DEFAULT_INSTANCE_URL
+        )
         if token is None and token_provider is None:
             token = os.environ.get(ENV_TOKEN)
 

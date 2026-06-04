@@ -232,13 +232,17 @@ def _register_jsonapi_tools(
         name=name_for("list"),
         description=LIST_DOC,
         title=f"List {title_prefix}s",
-        annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+        annotations=ToolAnnotations(
+            readOnlyHint=True, destructiveHint=False, openWorldHint=False
+        ),
     )(list_op)
     mcp.tool(
         name=name_for("get"),
         description=GET_DOC,
         title=f"Get {title_prefix}",
-        annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+        annotations=ToolAnnotations(
+            readOnlyHint=True, destructiveHint=False, openWorldHint=False
+        ),
     )(get_op)
     mcp.tool(
         name=name_for("create"),
@@ -269,7 +273,9 @@ def _register_jsonapi_tools(
 @mcp.tool(
     title="Get Service Schema",
     description=SCHEMA_DESCRIPTION,
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_schema() -> dict:
     connhex = get_connhex()

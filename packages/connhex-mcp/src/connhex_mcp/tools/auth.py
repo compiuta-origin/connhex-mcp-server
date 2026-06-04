@@ -6,7 +6,9 @@ from connhex_mcp.mcp_instance import mcp
 
 @mcp.tool(
     title="Get Current User and Session",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def whoami() -> dict:
     """

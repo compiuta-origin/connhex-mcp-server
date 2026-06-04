@@ -10,7 +10,9 @@ from connhex_mcp.mcp_instance import mcp
 
 @mcp.tool(
     title="Get Thing Model",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_model(
     model_id: Annotated[str, "UUID of the model."],
@@ -21,7 +23,9 @@ async def get_model(
 
 @mcp.tool(
     title="List Thing Models",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def list_models(
     limit: Annotated[int, "Max items to return (1–100)."] = 10,
@@ -48,7 +52,9 @@ async def list_models(
 
 @mcp.tool(
     title="List Model Things",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_model_things(
     model_id: Annotated[str, "UUID of the model."],

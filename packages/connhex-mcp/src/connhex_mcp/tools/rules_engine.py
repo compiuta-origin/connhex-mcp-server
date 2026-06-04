@@ -24,7 +24,9 @@ def _dump(model) -> dict:
 
 @mcp.tool(
     title="List Rules",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def list_rules(
     ids: Annotated[list[str] | None, "Filter by specific rule IDs."] = None,
@@ -53,7 +55,9 @@ async def list_rules(
 
 @mcp.tool(
     title="Get Rule",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_rule(rule_id: Annotated[str, "Rule ID."]) -> Rule:
     """Get a single rule by ID from the Connhex Rules Engine."""
@@ -154,7 +158,9 @@ async def delete_rule(
 
 @mcp.tool(
     title="List Rule Events",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def list_rule_events(
     rule_ids: Annotated[list[str] | None, "Filter by rule IDs."] = None,

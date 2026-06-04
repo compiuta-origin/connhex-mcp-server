@@ -97,7 +97,9 @@ async def _read_channel_messages(
 
 @mcp.tool(
     title="Read Channel Messages",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def read_channel_messages(
     channel_id: Annotated[str, "UUID of the channel."],
@@ -136,7 +138,9 @@ async def read_channel_messages(
 
 @mcp.tool(
     title="Read Thing Messages",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def read_thing_messages(
     thing_id: Annotated[

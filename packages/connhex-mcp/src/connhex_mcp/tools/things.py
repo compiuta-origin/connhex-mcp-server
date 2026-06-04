@@ -17,7 +17,9 @@ from connhex_mcp.mcp_instance import mcp
 
 @mcp.tool(
     title="Get Thing",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_thing(
     thing_id: Annotated[str, "UUID of the thing to retrieve."],
@@ -28,7 +30,9 @@ async def get_thing(
 
 @mcp.tool(
     title="List Things",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def list_things(
     limit: Annotated[int, "Max items to return (1–100)."] = 50,
@@ -51,7 +55,9 @@ async def list_things(
 
 @mcp.tool(
     title="Get Things Connectivity Status",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_things_status(
     ids: Annotated[list[str], "Thing UUIDs to fetch connectivity status for."],
@@ -63,7 +69,9 @@ async def get_things_status(
 
 @mcp.tool(
     title="Get Fleet Connectivity Summary",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_things_status_summary() -> StatusSummary:
     """Get a fleet-wide connectivity summary: online, offline, never connected, active last hour."""
@@ -72,7 +80,9 @@ async def get_things_status_summary() -> StatusSummary:
 
 @mcp.tool(
     title="Get Flapping Things",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_things_flapping(
     window: Annotated[
@@ -96,7 +106,9 @@ async def get_things_flapping(
 
 @mcp.tool(
     title="Get Thing Uptime",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_thing_uptime(
     thing_id: Annotated[str, "UUID of the thing."],
@@ -113,7 +125,9 @@ async def get_thing_uptime(
 
 @mcp.tool(
     title="List Thing Channels",
-    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=False),
+    annotations=ToolAnnotations(
+        readOnlyHint=True, destructiveHint=False, openWorldHint=False
+    ),
 )
 async def get_thing_channels(
     thing_id: Annotated[str, "UUID of the thing."],

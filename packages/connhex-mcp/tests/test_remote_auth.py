@@ -10,12 +10,17 @@ from connhex_mcp.auth.remote import (
 )
 from connhex_mcp.config import MCPSettings
 from fastmcp.server.auth.auth import AccessToken
+from starlette.applications import Starlette
+from starlette.testclient import TestClient
 
 
-def make_settings() -> MCPSettings:
+def make_settings(
+    openai_apps_challenge_token: str | None = None,
+) -> MCPSettings:
     return MCPSettings(
         instance_url="https://compiuta.connhex.dev",
         public_url="https://mcp.compiuta.connhex.dev",
+        openai_apps_challenge_token=openai_apps_challenge_token,
     )
 
 
@@ -27,6 +32,27 @@ def test_settings_default_to_saas_instance_url(
     settings = MCPSettings()
 
     assert str(settings.instance_url).rstrip("/") == DEFAULT_INSTANCE_URL
+
+
+def test_openai_apps_challenge_route_is_absent_without_token():
+    provider = ConnhexOAuthProvider(make_settings())
+    routes = provider.get_routes("/")
+
+    assert all(
+        route.path != "/.well-known/openai-apps-challenge" for route in routes
+    )
+
+
+def test_openai_apps_challenge_route_returns_configured_token():
+    provider = ConnhexOAuthProvider(make_settings("challenge-token"))
+    app = Starlette(routes=provider.get_routes("/"))
+    client = TestClient(app, raise_server_exceptions=True)
+
+    response = client.get("/.well-known/openai-apps-challenge")
+
+    assert response.status_code == 200
+    assert response.text == "challenge-token"
+    assert response.headers["content-type"].startswith("text/plain")
 
 
 def add_renewal_record(

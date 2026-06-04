@@ -26,6 +26,10 @@ class MCPSettings(BaseSettings):
         default=None,
         description="Public base URL, required for remote mode",
     )
+    openai_apps_challenge_token: str | None = Field(
+        default=None,
+        description="OpenAI Apps domain verification challenge token",
+    )
     log_config_path: str | None = Field(
         default=None, description="Path to logging config JSON"
     )

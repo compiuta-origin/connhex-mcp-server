@@ -20,7 +20,7 @@ from mcp.server.auth.provider import (
 from mcp.server.auth.settings import ClientRegistrationOptions
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 from starlette.requests import Request
-from starlette.responses import HTMLResponse, Response
+from starlette.responses import HTMLResponse, PlainTextResponse, Response
 from starlette.routing import Route
 
 from connhex_mcp.auth.templates import render_error_page, render_login_page
@@ -464,8 +464,23 @@ class ConnhexOAuthProvider(OAuthProvider):
                 methods=["GET"],
             )
         )
+        if self.settings.openai_apps_challenge_token:
+            routes.append(
+                Route(
+                    "/.well-known/openai-apps-challenge",
+                    endpoint=self._handle_openai_apps_challenge,
+                    methods=["GET"],
+                )
+            )
 
         return routes
+
+    async def _handle_openai_apps_challenge(
+        self, request: Request
+    ) -> PlainTextResponse:
+        return PlainTextResponse(
+            self.settings.openai_apps_challenge_token or ""
+        )
 
     async def _handle_favicon(self, request: Request) -> Response:
         data = (

@@ -42,7 +42,7 @@ Then run via `uv run connhex-cli` or activate the venv and use `connhex-cli` dir
 connhex-cli auth login
 ```
 
-Prompts for your instance URL, username, and password. The instance URL defaults to `https://connhex.com`; edit it only for staging, private, or self-hosted deployments. On success the session token is cached at `~/.connhex/credentials.json` (mode `0600`). All subsequent commands reuse it until it expires.
+Prompts for your instance URL, username, and password. The instance URL defaults to Connhex SaaS at `https://connhex.com`; edit it to connect to an enterprise dedicated instance. On success the session token is cached at `~/.connhex/credentials.json` (mode `0600`). All subsequent commands reuse it until it expires.
 
 ```bash
 connhex-cli auth status   # show cached token info without hitting the network
@@ -111,9 +111,9 @@ connhex-cli --output json things get <id>
 
 Bulk-register devices end-to-end: provision API + manufacturing record, with rollback on failure.
 
-| Command                          | Description                                                |
-| -------------------------------- | ---------------------------------------------------------- |
-| `connectables register <file>`   | Bulk-register devices from a CSV/JSON file (or `-` stdin)  |
+| Command                        | Description                                               |
+| ------------------------------ | --------------------------------------------------------- |
+| `connectables register <file>` | Bulk-register devices from a CSV/JSON file (or `-` stdin) |
 
 Flags:
 

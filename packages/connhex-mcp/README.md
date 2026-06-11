@@ -4,31 +4,116 @@ An MCP server that exposes [Connhex](https://connhex.com) APIs as tools.
 
 ## Setup
 
-### Prerequisites
+### Remote MCP Server
+
+Connhex provides a hosted remote MCP server for the SaaS instance:
+
+```text
+https://mcp.connhex.com
+```
+
+The remote MCP server handles authentication through your browser. When you
+first connect, your MCP client will prompt you to authenticate with your
+Connhex account.
+
+| Deployment | MCP server URL | Authentication |
+| ---------- | -------------- | -------------- |
+| Connhex SaaS | `https://mcp.connhex.com` | Connhex SaaS account via browser OAuth |
+| Local MCP targeting SaaS | Local `uvx` server, no `CONNHEX_INSTANCE_URL` needed | Local env vars |
+| Local MCP targeting enterprise | Local `uvx` server with `CONNHEX_INSTANCE_URL=https://<customer-connhex-domain>` | Local env vars |
+
+### Configuration with well-known MCP clients
+
+#### Claude Code
+
+Run the following command to add the Connhex MCP server:
+
+```bash
+claude mcp add connhex --transport http https://mcp.connhex.com
+```
+
+Then use the `/mcp` slash command inside Claude Code to authenticate with your
+Connhex account. This opens a browser window where you can complete the login
+process.
+
+Use `-s user` or `-s local` if you want to control whether Claude Code stores
+the server globally or only for the current project.
+
+#### Codex
+
+Run the following commands to add the Connhex MCP server and authenticate:
+
+```bash
+codex mcp add connhex --url https://mcp.connhex.com
+codex mcp login connhex
+```
+
+`codex mcp login connhex` prints an authorization URL. Open it in your browser,
+sign in with your Connhex account, then return to Codex. Start a new Codex
+conversation after login so MCP tools reload.
+
+You can also configure the server directly in `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.connhex]
+url = "https://mcp.connhex.com"
+```
+
+Then run:
+
+```bash
+codex mcp login connhex
+```
+
+#### Claude Desktop and JSON clients
+
+If your MCP client uses JSON configuration, add this server definition:
+
+```json
+{
+  "mcpServers": {
+    "connhex": {
+      "type": "http",
+      "url": "https://mcp.connhex.com"
+    }
+  }
+}
+```
+
+### Running Locally
+
+Use a local stdio MCP server when your client cannot use remote MCP, when you
+need token-based auth in a browserless environment, or when developing the MCP
+server.
+
+#### Prerequisites
 
 - Python 3.11+
 - [uvx](https://docs.astral.sh/uv/getting-started/installation/)
 - A Connhex account with access to the target instance
 
-### Configure your MCP client
+The local server connects to the Connhex SaaS instance at `https://connhex.com`
+by default. Set `CONNHEX_INSTANCE_URL` only when targeting an enterprise
+dedicated, staging, private, or self-hosted Connhex API instance.
 
-Add the server to your MCP client. The examples below use username/password
-authentication; see [Authentication](#authentication) for token-based auth.
-
-**Claude Code**:
+#### Claude Code local stdio
 
 ```bash
 claude mcp add -s user \
   -e CONNHEX_USERNAME=your-email@example.com \
   -e CONNHEX_PASSWORD=your-password \
+  connhex \
   -- \
-  connhex uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
+  uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
 ```
 
-Use `-s local` instead of `-s user` if you want the server configured only for
-the current project.
+For an enterprise/custom-domain Connhex API instance, add:
 
-**Codex**:
+```bash
+-e CONNHEX_INSTANCE_URL=https://<customer-connhex-domain>
+```
+
+#### Codex local stdio
 
 ```bash
 codex mcp add connhex \
@@ -38,13 +123,16 @@ codex mcp add connhex \
   uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
 ```
 
+For an enterprise/custom-domain Connhex API instance, add:
+
+```bash
+--env CONNHEX_INSTANCE_URL=https://<customer-connhex-domain>
+```
+
 Codex stores MCP servers in `~/.codex/config.toml` by default. You can also add
 the same server to a trusted project-scoped `.codex/config.toml`.
 
-**Other MCP clients**
-
-If your client uses JSON configuration (e.g. Claude Desktop), add this server
-definition:
+#### JSON clients local stdio
 
 ```json
 {
@@ -65,28 +153,47 @@ definition:
 }
 ```
 
-After setup, restart the client or open a new session. In Claude Code, verify
-with `claude mcp list`. In Codex, verify with `codex mcp list` or `/mcp` inside
-the TUI.
+Add `CONNHEX_INSTANCE_URL` under `env` when targeting an enterprise/custom
+Connhex API instance.
 
-By default, the server connects to the Connhex SaaS instance at `https://connhex.com`.
-To connect to an enterprise dedicated instance, set `CONNHEX_INSTANCE_URL` to your instance URL in the MCP server environment.
+### Local Authentication
 
-### Authentication
+Local authentication is inferred from the environment variables available to
+the `connhex-mcp` process:
 
-The server connects to `https://connhex.com` by default. Set
-`CONNHEX_INSTANCE_URL` only when you need to target an enterprise dedicated,
-staging, private, or self-hosted deployment.
+| Environment variables | Description |
+| --------------------- | ----------- |
+| `CONNHEX_USERNAME`, `CONNHEX_PASSWORD` | Logs in with username and password, then caches the session token in memory. |
+| `CONNHEX_BEARER_TOKEN` | Uses a static bearer token. |
+| Incoming `Authorization` header or Connhex session cookie | Used when the MCP transport forwards request headers. |
 
-Authentication is configured via `CONNHEX_AUTH_TYPE` (defaults to `credentials`):
+For sandboxed or browserless environments, use token-based auth with the local
+stdio server:
 
-| Auth type     | Required env vars                         | Description                        |
-| ------------- | ----------------------------------------- | ---------------------------------- |
-| `credentials` | `CONNHEX_USERNAME`, `CONNHEX_PASSWORD`    | Logs in with username and password |
-| `token`       | `CONNHEX_BEARER_TOKEN`                    | Uses a static bearer token         |
-| `session`     | _(none — provided via transport headers)_ | Forwards session from the client   |
+```bash
+CONNHEX_BEARER_TOKEN=your-token
+```
 
-### Transport
+For Claude Code local stdio:
+
+```bash
+claude mcp add -s user \
+  -e CONNHEX_BEARER_TOKEN=your-token \
+  connhex \
+  -- \
+  uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
+```
+
+For Codex local stdio:
+
+```bash
+codex mcp add connhex \
+  --env CONNHEX_BEARER_TOKEN=your-token \
+  -- \
+  uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
+```
+
+### Local Transport
 
 By default the server uses `stdio`. You can select a different transport by appending `--transport` to the `args` array:
 

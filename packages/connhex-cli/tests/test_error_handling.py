@@ -1,3 +1,4 @@
+import httpx
 from connhex.errors import ConnhexAPIError
 from typer.testing import CliRunner
 
@@ -12,6 +13,13 @@ class FakeThings:
         raise ConnhexAPIError(
             status=404,
             detail="Requested url does not match any rules",
+            response=httpx.Response(
+                404,
+                request=httpx.Request(
+                    "GET",
+                    "https://connhex.test/things/flapping",
+                ),
+            ),
         )
 
 

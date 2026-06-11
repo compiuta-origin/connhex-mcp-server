@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
 import typer
 from connhex.errors import ConnhexAPIError
@@ -36,7 +37,17 @@ class FakeManufacturingSvc:
 
     def create(self, resource_type: str, data: dict):
         if self.fail_on is not None and len(self.creates) == self.fail_on:
-            raise ConnhexAPIError(status=500, detail="boom")
+            raise ConnhexAPIError(
+                status=500,
+                detail="boom",
+                response=httpx.Response(
+                    500,
+                    request=httpx.Request(
+                        "POST",
+                        f"https://connhex.test/{resource_type}",
+                    ),
+                ),
+            )
         self.creates.append({"type": resource_type, "data": data})
         return {"ok": True}
 

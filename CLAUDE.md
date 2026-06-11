@@ -1,8 +1,6 @@
-# CLAUDE.md
-
 ## Project
 
-**connhex-python** — the Python monorepo for Connhex. Hosts the SDK, the MCP server, and the CLI as sibling packages in a single uv workspace.
+**connhex-tools** — the tools workspace for Connhex. Hosts the SDK, the MCP server, and the CLI as sibling packages in a single uv workspace.
 
 ## Workspace layout
 

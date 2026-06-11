@@ -1,8 +1,8 @@
 [project]
-name = "connhex-python"
+name = "connhex-tools"
 # Workspace aggregator — not a real artifact, version is non-semantic.
 version = "0.0.0"
-description = "Connhex Python monorepo: SDK, MCP server, and CLI"
+description = "Connhex tools workspace: SDK, MCP server, and CLI"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"

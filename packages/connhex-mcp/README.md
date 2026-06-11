@@ -22,7 +22,7 @@ claude mcp add -s user \
   -e CONNHEX_USERNAME=your-email@example.com \
   -e CONNHEX_PASSWORD=your-password \
   -- \
-  connhex uvx --from git+https://github.com/compiuta-origin/connhex-mcp-server connhex-mcp
+  connhex uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
 ```
 
 Use `-s local` instead of `-s user` if you want the server configured only for
@@ -35,7 +35,7 @@ codex mcp add connhex \
   --env CONNHEX_USERNAME=your-email@example.com \
   --env CONNHEX_PASSWORD=your-password \
   -- \
-  uvx --from git+https://github.com/compiuta-origin/connhex-mcp-server connhex-mcp
+  uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
 ```
 
 Codex stores MCP servers in `~/.codex/config.toml` by default. You can also add
@@ -43,7 +43,8 @@ the same server to a trusted project-scoped `.codex/config.toml`.
 
 **Other MCP clients**
 
-If your client uses JSON configuration (e.g. Claude Desktop), add this server definition:
+If your client uses JSON configuration (e.g. Claude Desktop), add this server
+definition:
 
 ```json
 {
@@ -52,7 +53,7 @@ If your client uses JSON configuration (e.g. Claude Desktop), add this server de
       "command": "uvx",
       "args": [
         "--from",
-        "git+https://github.com/compiuta-origin/connhex-mcp-server",
+        "git+https://github.com/compiuta-origin/connhex-tools",
         "connhex-mcp"
       ],
       "env": {
@@ -69,8 +70,7 @@ with `claude mcp list`. In Codex, verify with `codex mcp list` or `/mcp` inside
 the TUI.
 
 By default, the server connects to the Connhex SaaS instance at `https://connhex.com`.
-To connect to an enterprise dedicated instance, set `CONNHEX_INSTANCE_URL` to your
-instance URL in the MCP server environment.
+To connect to an enterprise dedicated instance, set `CONNHEX_INSTANCE_URL` to your instance URL in the MCP server environment.
 
 ### Authentication
 
@@ -93,7 +93,7 @@ By default the server uses `stdio`. You can select a different transport by appe
 ```json
 "args": [
   "--from",
-  "git+https://github.com/compiuta-origin/connhex-mcp-server",
+  "git+https://github.com/compiuta-origin/connhex-tools",
   "connhex-mcp",
   "--transport",
   "streamable-http"
@@ -107,7 +107,7 @@ Available transports: `stdio`, `http`, `sse`, `streamable-http`.
 `uvx` caches the built environment on first run and does **not** re-fetch the git repo on subsequent invocations, so updates to this server are not picked up automatically. To pull the latest version, run:
 
 ```bash
-uvx --refresh --from git+https://github.com/compiuta-origin/connhex-mcp-server connhex-mcp
+uvx --refresh --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
 ```
 
 Then restart your MCP client.
@@ -275,8 +275,8 @@ This opens a browser UI where you can interactively call tools and inspect respo
 Clone the repo and install dependencies:
 
 ```bash
-git clone https://github.com/compiuta-origin/connhex-mcp-server.git
-cd connhex-mcp-server
+git clone https://github.com/compiuta-origin/connhex-tools.git
+cd connhex-tools
 uv sync --dev
 ```
 

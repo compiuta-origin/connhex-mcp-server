@@ -1,6 +1,8 @@
-# Connhex Python
+# Connhex Tools
 
-Python monorepo for [Connhex](https://connhex.com). Contains the API SDK, the MCP server, and the CLI as sibling packages in a single [uv workspace](https://docs.astral.sh/uv/concepts/workspaces/).
+Tools workspace for [Connhex](https://connhex.com). Contains the MCP server,
+the CLI, and the API SDK as sibling packages in a single
+[uv workspace](https://docs.astral.sh/uv/concepts/workspaces/).
 
 ## Packages
 
@@ -15,8 +17,8 @@ Python monorepo for [Connhex](https://connhex.com). Contains the API SDK, the MC
 **Prerequisites:** Python 3.11+, [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```bash
-git clone https://github.com/compiuta-origin/connhex-mcp-server.git
-cd connhex-mcp-server
+git clone https://github.com/compiuta-origin/connhex-tools.git
+cd connhex-tools
 uv sync
 ```
 

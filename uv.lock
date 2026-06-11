@@ -7,7 +7,7 @@ members = [
     "connhex",
     "connhex-cli",
     "connhex-mcp",
-    "connhex-python",
+    "connhex-tools",
 ]
 
 [[package]]
@@ -294,7 +294,7 @@ requires-dist = [
 ]
 
 [[package]]
-name = "connhex-python"
+name = "connhex-tools"
 version = "0.0.0"
 source = { virtual = "." }
 dependencies = [

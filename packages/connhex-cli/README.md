@@ -7,7 +7,7 @@ A command-line interface for [Connhex](https://connhex.com) that lets you manage
 ### With uv (recommended for development)
 
 ```bash
-uv tool install git+https://github.com/compiuta-origin/connhex-mcp-server#subdirectory=packages/connhex-cli
+uv tool install git+https://github.com/compiuta-origin/connhex-tools#subdirectory=packages/connhex-cli
 ```
 
 This installs the `connhex-cli` binary into uv's tool environment and makes it available on your `PATH`.
@@ -21,14 +21,14 @@ uv tool upgrade connhex-cli
 ### With pip
 
 ```bash
-pip install git+https://github.com/compiuta-origin/connhex-mcp-server#subdirectory=packages/connhex-cli
+pip install git+https://github.com/compiuta-origin/connhex-tools#subdirectory=packages/connhex-cli
 ```
 
 ### From a workspace clone
 
 ```bash
-git clone https://github.com/compiuta-origin/connhex-mcp-server.git
-cd connhex-mcp-server
+git clone https://github.com/compiuta-origin/connhex-tools.git
+cd connhex-tools
 uv sync
 ```
 
@@ -273,8 +273,8 @@ Example `debug-logging.json`:
 ## Development
 
 ```bash
-git clone https://github.com/compiuta-origin/connhex-mcp-server.git
-cd connhex-mcp-server
+git clone https://github.com/compiuta-origin/connhex-tools.git
+cd connhex-tools
 uv sync
 
 uv run pytest packages/connhex-cli/tests

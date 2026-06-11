@@ -12,9 +12,38 @@ An MCP server that exposes [Connhex](https://connhex.com) APIs as tools.
 
 ### Configure your MCP client
 
-Add the server to your MCP client configuration.
+Add the server to your MCP client. The examples below use username/password
+authentication; see [Authentication](#authentication) for token-based auth.
 
-**Claude Desktop** (`claude_desktop_config.json`):
+**Claude Code**:
+
+```bash
+claude mcp add -s user \
+  -e CONNHEX_USERNAME=your-email@example.com \
+  -e CONNHEX_PASSWORD=your-password \
+  -- \
+  connhex uvx --from git+https://github.com/compiuta-origin/connhex-mcp-server connhex-mcp
+```
+
+Use `-s local` instead of `-s user` if you want the server configured only for
+the current project.
+
+**Codex**:
+
+```bash
+codex mcp add connhex \
+  --env CONNHEX_USERNAME=your-email@example.com \
+  --env CONNHEX_PASSWORD=your-password \
+  -- \
+  uvx --from git+https://github.com/compiuta-origin/connhex-mcp-server connhex-mcp
+```
+
+Codex stores MCP servers in `~/.codex/config.toml` by default. You can also add
+the same server to a trusted project-scoped `.codex/config.toml`.
+
+**Other MCP clients**
+
+If your client uses JSON configuration (e.g. Claude Desktop), add this server definition:
 
 ```json
 {
@@ -35,9 +64,19 @@ Add the server to your MCP client configuration.
 }
 ```
 
+After setup, restart the client or open a new session. In Claude Code, verify
+with `claude mcp list`. In Codex, verify with `codex mcp list` or `/mcp` inside
+the TUI.
+
+By default, the server connects to the Connhex SaaS instance at `https://connhex.com`.
+To connect to an enterprise dedicated instance, set `CONNHEX_INSTANCE_URL` to your
+instance URL in the MCP server environment.
+
 ### Authentication
 
-The server connects to `https://connhex.com` by default. Set `CONNHEX_INSTANCE_URL` only when you need to target staging, private, or self-hosted deployments.
+The server connects to `https://connhex.com` by default. Set
+`CONNHEX_INSTANCE_URL` only when you need to target an enterprise dedicated,
+staging, private, or self-hosted deployment.
 
 Authentication is configured via `CONNHEX_AUTH_TYPE` (defaults to `credentials`):
 

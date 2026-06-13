@@ -23,6 +23,11 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, PlainTextResponse, Response
 from starlette.routing import Route
 
+from connhex_mcp.auth.store import (
+    InMemoryOAuthClientStore,
+    OAuthClientStore,
+    SQLiteOAuthClientStore,
+)
 from connhex_mcp.auth.templates import render_error_page, render_login_page
 from connhex_mcp.config import MCPSettings
 
@@ -99,9 +104,16 @@ class ConnhexOAuthProvider(OAuthProvider):
 
         self.settings = settings
         self.accounts_url = build_accounts_url(str(settings.instance_url))
+        if settings.oauth_client_store_path:
+            self._client_store: OAuthClientStore = SQLiteOAuthClientStore(
+                settings.oauth_client_store_path
+            )
+        else:
+            self._client_store = InMemoryOAuthClientStore()
 
-        # In-memory stores
-        self._clients: dict[str, OAuthClientInformationFull] = {}
+        # Per-login and per-session stores stay in memory. Persisting dynamic
+        # OAuth clients is enough for MCP clients to reuse registrations after
+        # a pod restart without turning this service into a password store.
         self._auth_codes: dict[str, AuthorizationCode] = {}
         self._code_tokens: dict[str, str] = {}  # code -> ory_st_* token
         self._access_tokens: dict[str, AccessToken] = {}
@@ -229,13 +241,12 @@ class ConnhexOAuthProvider(OAuthProvider):
     async def get_client(
         self, client_id: str
     ) -> OAuthClientInformationFull | None:
-        return self._clients.get(client_id)
+        return self._client_store.get(client_id)
 
     async def register_client(
         self, client_info: OAuthClientInformationFull
     ) -> None:
-        if client_info.client_id:
-            self._clients[client_info.client_id] = client_info
+        self._client_store.put(client_info)
 
     async def authorize(
         self,

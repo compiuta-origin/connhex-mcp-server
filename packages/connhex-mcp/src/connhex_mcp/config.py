@@ -26,6 +26,10 @@ class MCPSettings(BaseSettings):
         default=None,
         description="Public base URL, required for remote mode",
     )
+    oauth_client_store_path: str | None = Field(
+        default=None,
+        description="SQLite path for persisted OAuth client registrations.",
+    )
     openai_apps_challenge_token: str | None = Field(
         default=None,
         description="OpenAI Apps domain verification challenge token",

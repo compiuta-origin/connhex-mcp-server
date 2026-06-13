@@ -16,11 +16,16 @@ The remote MCP server handles authentication through your browser. When you
 first connect, your MCP client will prompt you to authenticate with your
 Connhex account.
 
-| Deployment | MCP server URL | Authentication |
-| ---------- | -------------- | -------------- |
-| Connhex SaaS | `https://mcp.connhex.com` | Connhex SaaS account via browser OAuth |
-| Local MCP targeting SaaS | Local `uvx` server, no `CONNHEX_INSTANCE_URL` needed | Local env vars |
-| Local MCP targeting enterprise | Local `uvx` server with `CONNHEX_INSTANCE_URL=https://<customer-connhex-domain>` | Local env vars |
+Remote deployments should persist dynamic OAuth client registrations so MCP
+clients can reuse their registered `client_id` after a pod restart or image
+update. Set `CONNHEX_OAUTH_CLIENT_STORE_PATH` to a SQLite file on a persistent
+volume, for example `/data/oauth-clients.sqlite`.
+
+| Deployment                     | MCP server URL                                                                   | Authentication                         |
+| ------------------------------ | -------------------------------------------------------------------------------- | -------------------------------------- |
+| Connhex SaaS                   | `https://mcp.connhex.com`                                                        | Connhex SaaS account via browser OAuth |
+| Local MCP targeting SaaS       | Local `uvx` server, no `CONNHEX_INSTANCE_URL` needed                             | Local env vars                         |
+| Local MCP targeting enterprise | Local `uvx` server with `CONNHEX_INSTANCE_URL=https://<customer-connhex-domain>` | Local env vars                         |
 
 ### Configuration with well-known MCP clients
 
@@ -161,11 +166,11 @@ Connhex API instance.
 Local authentication is inferred from the environment variables available to
 the `connhex-mcp` process:
 
-| Environment variables | Description |
-| --------------------- | ----------- |
-| `CONNHEX_USERNAME`, `CONNHEX_PASSWORD` | Logs in with username and password, then caches the session token in memory. |
-| `CONNHEX_BEARER_TOKEN` | Uses a static bearer token. |
-| Incoming `Authorization` header or Connhex session cookie | Used when the MCP transport forwards request headers. |
+| Environment variables                                     | Description                                                                  |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `CONNHEX_USERNAME`, `CONNHEX_PASSWORD`                    | Logs in with username and password, then caches the session token in memory. |
+| `CONNHEX_BEARER_TOKEN`                                    | Uses a static bearer token.                                                  |
+| Incoming `Authorization` header or Connhex session cookie | Used when the MCP transport forwards request headers.                        |
 
 For sandboxed or browserless environments, use token-based auth with the local
 stdio server:

@@ -24,12 +24,22 @@ def render_login_page(flow_id: str, error: str | None = None) -> str:
     <title>Sign in to Connhex</title>
     <link rel="icon" href="/favicon.ico">
     <style>
+        :root {{
+            --connhex-light: #f0f1f2;
+            --connhex-dark: #0d1b2a;
+            --connhex-darker: #081420;
+            --connhex-orange: #f07d25;
+            --connhex-cyan: #03d8ff;
+            --connhex-purple: #c084fc;
+        }}
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
                          Roboto, sans-serif;
-            background: #0a0a0f;
-            color: #e4e4e7;
+            background:
+                radial-gradient(circle at top, rgba(3,216,255,0.12), transparent 34rem),
+                linear-gradient(145deg, var(--connhex-darker) 0%, var(--connhex-dark) 100%);
+            color: var(--connhex-light);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -37,26 +47,35 @@ def render_login_page(flow_id: str, error: str | None = None) -> str:
             padding: 1rem;
         }}
         .card {{
-            background: #18181b;
-            border: 1px solid #27272a;
+            background: rgba(13,27,42,0.94);
+            border: 1px solid rgba(240,241,242,0.14);
             border-radius: 12px;
-            padding: 2rem;
+            padding: 2.25rem;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            box-shadow:
+                0 30px 60px -20px rgba(0,0,0,0.72),
+                inset 0 1px 0 rgba(255,255,255,0.03);
         }}
         .logo {{
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.625rem;
+        }}
+        .logo img {{
+            display: block;
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1rem;
+            border-radius: 10px;
         }}
         .logo h1 {{
             font-size: 1.25rem;
             font-weight: 600;
-            color: #fafafa;
+            color: var(--connhex-light);
         }}
         .logo p {{
             font-size: 0.875rem;
-            color: #71717a;
+            color: rgba(240,241,242,0.68);
             margin-top: 0.25rem;
         }}
         .error {{
@@ -75,29 +94,29 @@ def render_login_page(flow_id: str, error: str | None = None) -> str:
             display: block;
             font-size: 0.875rem;
             font-weight: 500;
-            color: #a1a1aa;
+            color: rgba(240,241,242,0.78);
             margin-bottom: 0.375rem;
         }}
         input[type="email"], input[type="password"] {{
             width: 100%;
             padding: 0.625rem 0.75rem;
-            background: #09090b;
-            border: 1px solid #3f3f46;
+            background: var(--connhex-darker);
+            border: 1px solid rgba(240,241,242,0.18);
             border-radius: 8px;
-            color: #fafafa;
+            color: var(--connhex-light);
             font-size: 0.9375rem;
             outline: none;
             transition: border-color 0.15s;
         }}
         input:focus {{
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+            border-color: var(--connhex-cyan);
+            box-shadow: 0 0 0 3px rgba(3,216,255,0.16);
         }}
         .field {{ margin-bottom: 1rem; }}
         button {{
             width: 100%;
             padding: 0.625rem 1rem;
-            background: #6366f1;
+            background: var(--connhex-orange);
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -107,19 +126,36 @@ def render_login_page(flow_id: str, error: str | None = None) -> str:
             transition: background 0.15s;
             margin-top: 0.5rem;
         }}
-        button:hover {{ background: #4f46e5; }}
-        button:active {{ background: #4338ca; }}
+        button:hover {{ background: #e96e10; }}
+        button:active {{ background: #dc680f; }}
+        .links {{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1.125rem;
+            font-size: 0.8125rem;
+        }}
+        .links a {{
+            color: var(--connhex-cyan);
+            text-decoration: none;
+        }}
+        .links a:hover {{
+            color: var(--connhex-orange);
+            text-decoration: underline;
+        }}
         .footer {{
             text-align: center;
             margin-top: 1.25rem;
             font-size: 0.75rem;
-            color: #52525b;
+            color: rgba(240,241,242,0.48);
         }}
     </style>
 </head>
 <body>
     <div class="card">
         <div class="logo">
+            <img src="/connhex-logo.webp" alt="Connhex">
             <h1>Sign in to Connhex</h1>
             <p>Authorize MCP access to your account</p>
         </div>
@@ -138,6 +174,14 @@ def render_login_page(flow_id: str, error: str | None = None) -> str:
             </div>
             <button type="submit">Sign in</button>
         </form>
+        <div class="links">
+            <a href="https://connhex.com" target="_blank"
+               rel="noopener noreferrer">Learn about Connhex</a>
+            <a href="https://accounts.connhex.com/registration"
+               target="_blank" rel="noopener noreferrer">
+                Create a free account
+            </a>
+        </div>
         <div class="footer">
             Your credentials are sent directly to Connhex and are not stored.
         </div>
@@ -155,12 +199,18 @@ def render_error_page(message: str) -> str:
     <title>Error — Connhex MCP</title>
     <link rel="icon" href="/favicon.ico">
     <style>
+        :root {{
+            --connhex-light: #f0f1f2;
+            --connhex-dark: #0d1b2a;
+            --connhex-darker: #081420;
+            --connhex-orange: #f07d25;
+        }}
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
                          Roboto, sans-serif;
-            background: #0a0a0f;
-            color: #e4e4e7;
+            background: var(--connhex-darker);
+            color: var(--connhex-light);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -168,8 +218,8 @@ def render_error_page(message: str) -> str:
             padding: 1rem;
         }}
         .card {{
-            background: #18181b;
-            border: 1px solid #27272a;
+            background: var(--connhex-dark);
+            border: 1px solid rgba(240,241,242,0.14);
             border-radius: 12px;
             padding: 2rem;
             width: 100%;
@@ -179,12 +229,12 @@ def render_error_page(message: str) -> str:
         }}
         h1 {{
             font-size: 1.125rem;
-            color: #fca5a5;
+            color: var(--connhex-orange);
             margin-bottom: 0.75rem;
         }}
         p {{
             font-size: 0.875rem;
-            color: #a1a1aa;
+            color: rgba(240,241,242,0.78);
             line-height: 1.5;
         }}
     </style>

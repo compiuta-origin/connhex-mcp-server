@@ -451,7 +451,7 @@ class ConnhexOAuthProvider(OAuthProvider):
         self._token_forwarding.pop(token_str, None)
 
     def get_routes(self, mcp_path: str | None = None) -> list[Route]:
-        """Add login form and favicon routes to the standard OAuth routes."""
+        """Add login form and static asset routes to OAuth routes."""
         routes = super().get_routes(mcp_path)
 
         routes.append(
@@ -472,6 +472,13 @@ class ConnhexOAuthProvider(OAuthProvider):
             Route(
                 "/favicon.ico",
                 endpoint=self._handle_favicon,
+                methods=["GET"],
+            )
+        )
+        routes.append(
+            Route(
+                "/connhex-logo.webp",
+                endpoint=self._handle_logo,
                 methods=["GET"],
             )
         )
@@ -498,6 +505,12 @@ class ConnhexOAuthProvider(OAuthProvider):
             Path(__file__).parent.parent / "res" / "favicon.ico"
         ).read_bytes()
         return Response(content=data, media_type="image/x-icon")
+
+    async def _handle_logo(self, request: Request) -> Response:
+        data = (
+            Path(__file__).parent.parent / "res" / "connhex-logo.webp"
+        ).read_bytes()
+        return Response(content=data, media_type="image/webp")
 
     async def _handle_login_page(self, request: Request) -> Response:
         """Serve the HTML login form."""

@@ -214,6 +214,27 @@ By default the server uses `stdio`. You can select a different transport by appe
 
 Available transports: `stdio`, `http`, `sse`, `streamable-http`.
 
+### Tool Customization
+
+Deployments can hide tools with `CONNHEX_DISABLED_TOOLS`, a comma-separated
+list of tool names.
+
+Deployments can also override tool descriptions and titles with
+`CONNHEX_TOOL_TRANSFORMS`. The value must be a JSON object keyed by existing
+tool name:
+
+```json
+{
+  "read_thing_messages": {
+    "description": "Read deployment-specific telemetry for a Connhex thing.",
+    "title": "Read Thing Telemetry"
+  },
+  "list_things": {
+    "description": "List Connhex things visible in this deployment."
+  }
+}
+```
+
 ## Updating
 
 `uvx` caches the built environment on first run and does **not** re-fetch the git repo on subsequent invocations, so updates to this server are not picked up automatically. To pull the latest version, run:

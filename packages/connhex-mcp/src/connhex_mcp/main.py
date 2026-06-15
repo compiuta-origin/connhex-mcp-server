@@ -4,7 +4,10 @@ import logging
 import pkgutil
 
 import uvicorn
+from fastmcp import FastMCP
 from fastmcp.server.server import Transport
+from fastmcp.server.transforms import ToolTransform
+from fastmcp.tools.tool_transform import ToolTransformConfig
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
@@ -26,6 +29,23 @@ for _pkg in (connhex_mcp.tools, connhex_mcp.resources):
         importlib.import_module(f"{_pkg.__name__}.{_module_name}")
 
 TRANSPORTS = ["stdio", "http", "sse", "streamable-http"]
+
+
+def _apply_tool_transforms(server: FastMCP, settings: MCPSettings) -> None:
+    if not settings.tool_transforms:
+        return
+
+    server.add_transform(
+        ToolTransform(
+            {
+                name: ToolTransformConfig(
+                    description=override.description,
+                    title=override.title,
+                )
+                for name, override in settings.tool_transforms.items()
+            }
+        )
+    )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -93,6 +113,8 @@ def main():
     log_config = setup_logging(settings.log_config_path)
 
     logger.info("connhex-mcp %s starting (mode=%s)", __version__, args.mode)
+
+    _apply_tool_transforms(mcp, settings)
 
     if settings.disabled_tools:
         mcp.disable(names=set(settings.disabled_tools), components={"tool"})

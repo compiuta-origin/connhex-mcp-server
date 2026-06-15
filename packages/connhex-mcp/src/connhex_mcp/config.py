@@ -1,6 +1,13 @@
 from connhex.urls import DEFAULT_INSTANCE_URL
-from pydantic import Field, HttpUrl, field_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class ToolTransformOverride(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    description: str | None = None
+    title: str | None = None
 
 
 class MCPSettings(BaseSettings):
@@ -39,6 +46,10 @@ class MCPSettings(BaseSettings):
     )
     disabled_tools: list[str] | None = Field(
         default=None, description="Tool names to hide from the LLM"
+    )
+    tool_transforms: dict[str, ToolTransformOverride] | None = Field(
+        default=None,
+        description="JSON object mapping tool names to description/title overrides",
     )
 
     @field_validator("disabled_tools", mode="before")

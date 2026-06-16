@@ -104,10 +104,9 @@ dedicated, staging, private, or self-hosted Connhex API instance.
 #### Claude Code local stdio
 
 ```bash
-claude mcp add -s user \
+claude mcp add -s user connhex \
   -e CONNHEX_USERNAME=your-email@example.com \
   -e CONNHEX_PASSWORD=your-password \
-  connhex \
   -- \
   uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
 ```
@@ -182,9 +181,8 @@ CONNHEX_BEARER_TOKEN=your-token
 For Claude Code local stdio:
 
 ```bash
-claude mcp add -s user \
+claude mcp add -s user connhex \
   -e CONNHEX_BEARER_TOKEN=your-token \
-  connhex \
   -- \
   uvx --from git+https://github.com/compiuta-origin/connhex-tools connhex-mcp
 ```

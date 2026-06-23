@@ -16,12 +16,16 @@ Limit = Annotated[int, "Max messages to return (upstream max is 1500)."]
 Offset = Annotated[int, "Pagination offset."]
 FromS = Annotated[
     float | None,
-    "Start time in Unix epoch seconds. The integer part represents whole seconds; "
+    "Start time in Unix epoch seconds. Always provide from_s and to_s together "
+    "when the requested time range is known; this drastically speeds up database "
+    "queries. The integer part represents whole seconds; "
     "the fractional part provides sub-second precision (e.g. 1744243200.183767).",
 ]
 ToS = Annotated[
     float | None,
-    "End time in Unix epoch seconds. The integer part represents whole seconds; "
+    "End time in Unix epoch seconds. Always provide from_s and to_s together "
+    "when the requested time range is known; this drastically speeds up database "
+    "queries. The integer part represents whole seconds; "
     "the fractional part provides sub-second precision (e.g. 1744243200.183767).",
 ]
 Publisher = Annotated[str | None, "Publisher UUID filter."]

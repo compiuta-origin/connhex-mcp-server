@@ -169,7 +169,13 @@ the `connhex-mcp` process:
 | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `CONNHEX_USERNAME`, `CONNHEX_PASSWORD`                    | Logs in with username and password, then caches the session token in memory. |
 | `CONNHEX_BEARER_TOKEN`                                    | Uses a static bearer token.                                                  |
-| Incoming `Authorization` header or Connhex session cookie | Used when the MCP transport forwards request headers.                        |
+| `CONNHEX_SESSION_COOKIE`                                  | Uses a static `chx_auth_session` cookie value.                               |
+| Incoming `Authorization` header or `chx_auth_session` cookie | Used when the MCP transport forwards request headers.                     |
+
+Session-cookie authentication is sent directly to Connhex as
+`Cookie: chx_auth_session=<value>`; it does not require a Kratos JWT token
+template. Set `CONNHEX_SESSION_COOKIE` to the cookie value only, not a full
+`Cookie` header.
 
 For sandboxed or browserless environments, use token-based auth with the local
 stdio server:

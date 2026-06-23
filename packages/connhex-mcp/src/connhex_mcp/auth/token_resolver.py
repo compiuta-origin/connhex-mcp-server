@@ -1,12 +1,12 @@
 from collections.abc import Awaitable, Callable
 
-from connhex.urls import build_accounts_url
+from connhex.auth import Auth, BearerAuth, SessionCookieAuth
 from fastmcp.server.dependencies import get_access_token, get_http_headers
 
 from connhex_mcp.auth.credentials import CredentialsProvider
 from connhex_mcp.auth.session import (
     extract_bearer_from_headers,
-    extract_token_from_cookie,
+    extract_session_cookie,
 )
 from connhex_mcp.config import MCPSettings
 
@@ -22,52 +22,56 @@ def _fastmcp_validated_token() -> str | None:
     return None
 
 
-def build_token_provider(
+def build_auth_provider(
     settings: MCPSettings,
-) -> Callable[[], Awaitable[str]]:
-    """Build a per-request token provider for this MCP server.
+) -> Callable[[], Awaitable[Auth]]:
+    """Build a per-request authentication provider for this MCP server.
 
     Priority:
       1. In remote mode, prefer the fastmcp-validated (auto-renewed) token.
       2. Bearer token from the incoming request's Authorization header.
       3. fastmcp-validated token (as fallback in local mode).
-      4. Session cookie exchanged via Kratos whoami.
-      5. Static `bearer_token` from settings.
-      6. Username/password credentials (auto-refreshing).
+      4. Connhex session cookie from the incoming request.
+      5. Static `session_cookie` from settings.
+      6. Static `bearer_token` from settings.
+      7. Username/password credentials (auto-refreshing).
     """
-    instance_url = str(settings.instance_url)
-    accounts_url = build_accounts_url(instance_url)
     creds = (
-        CredentialsProvider(instance_url, settings.username, settings.password)
+        CredentialsProvider(
+            str(settings.instance_url), settings.username, settings.password
+        )
         if settings.username and settings.password
         else None
     )
     prefer_validated = settings.public_url is not None
 
-    async def resolve() -> str:
+    async def resolve() -> Auth:
         if prefer_validated:
             tok = _fastmcp_validated_token()
             if tok:
-                return tok
+                return BearerAuth(tok)
 
         headers = get_http_headers() or {}
-        bearer = await extract_bearer_from_headers(headers)
+        bearer = extract_bearer_from_headers(headers)
         if bearer:
-            return bearer.removeprefix("Bearer ").strip()
+            return BearerAuth(bearer.removeprefix("Bearer ").strip())
 
         tok = _fastmcp_validated_token()
         if tok:
-            return tok
+            return BearerAuth(tok)
 
-        cookie_token = await extract_token_from_cookie(headers, accounts_url)
-        if cookie_token:
-            return cookie_token.removeprefix("Bearer ").strip()
+        session_cookie = extract_session_cookie(headers)
+        if session_cookie:
+            return SessionCookieAuth(session_cookie)
+
+        if settings.session_cookie:
+            return SessionCookieAuth(settings.session_cookie)
 
         if settings.bearer_token:
-            return settings.bearer_token
+            return BearerAuth(settings.bearer_token)
 
         if creds is not None:
-            return await creds.get_token()
+            return BearerAuth(await creds.get_token())
 
         raise RuntimeError(
             "No authentication available for this MCP request. "

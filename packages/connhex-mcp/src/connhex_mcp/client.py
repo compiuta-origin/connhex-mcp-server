@@ -10,7 +10,7 @@ from functools import lru_cache
 
 from connhex import AsyncConnhex
 
-from connhex_mcp.auth.token_resolver import build_token_provider
+from connhex_mcp.auth.token_resolver import build_auth_provider
 from connhex_mcp.config import MCPSettings
 
 
@@ -24,5 +24,5 @@ def get_connhex() -> AsyncConnhex:
     settings = get_settings()
     return AsyncConnhex(
         instance_url=str(settings.instance_url),
-        token_provider=build_token_provider(settings),
+        auth_provider=build_auth_provider(settings),
     )

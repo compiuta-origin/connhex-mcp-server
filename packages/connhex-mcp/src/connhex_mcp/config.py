@@ -21,6 +21,10 @@ class MCPSettings(BaseSettings):
         default=None,
         description="Static bearer token (local mode fallback).",
     )
+    session_cookie: str | None = Field(
+        default=None,
+        description="Static chx_auth_session cookie value (local mode fallback).",
+    )
     username: str | None = Field(
         default=None,
         description="Username for password auth (local mode fallback).",

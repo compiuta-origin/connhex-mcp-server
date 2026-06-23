@@ -6,6 +6,7 @@ import pytest
 from connhex import (
     APIConnectionError,
     APITimeoutError,
+    BearerAuth,
     AuthenticationError,
     ConflictError,
     Connhex,
@@ -15,6 +16,7 @@ from connhex import (
     NotFoundError,
     PermissionDeniedError,
     RateLimitError,
+    SessionCookieAuth,
     UnprocessableEntityError,
 )
 from connhex.sync.services.iam import IAMService
@@ -38,6 +40,8 @@ def _facade(handler) -> Connhex:
 
 def test_top_level_exports():
     assert Connhex is connhex.Connhex
+    assert BearerAuth is connhex.BearerAuth
+    assert SessionCookieAuth is connhex.SessionCookieAuth
     assert ConnhexAPIError is connhex.ConnhexAPIError
     assert ConnhexError is connhex.ConnhexError
     assert AuthenticationError is connhex.AuthenticationError
@@ -100,6 +104,26 @@ def test_things_list_smoke():
     client.close()
 
 
+def test_auth_provider_sends_session_cookie_only():
+    def auth_provider():
+        return SessionCookieAuth("session-value")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.headers["cookie"] == "chx_auth_session=session-value"
+        assert "authorization" not in request.headers
+        return httpx.Response(200, json={"identity": {"id": "abc"}})
+
+    client = Connhex(
+        instance_url="https://example.test", auth_provider=auth_provider
+    )
+    client._http._http = httpx.Client(
+        transport=httpx.MockTransport(handler), follow_redirects=True
+    )
+
+    client.iam.whoami()
+    client.close()
+
+
 def test_env_fallback_instance_url_and_token(monkeypatch):
     monkeypatch.setenv("CONNHEX_INSTANCE_URL", "https://env.example.test")
     monkeypatch.setenv("CONNHEX_BEARER_TOKEN", "env-tok")
@@ -120,6 +144,18 @@ def test_token_and_token_provider_mutually_exclusive():
             instance_url="https://example.test",
             token="t",
             token_provider=lambda: "x",
+        )
+
+
+def test_auth_modes_are_mutually_exclusive():
+    def auth_provider():
+        return BearerAuth("token")
+
+    with pytest.raises(ValueError):
+        Connhex(
+            instance_url="https://example.test",
+            token="token",
+            auth_provider=auth_provider,
         )
 
 

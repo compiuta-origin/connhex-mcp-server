@@ -11,6 +11,7 @@ import os
 from connhex.sync._base_client import (
     MAX_RETRIES,
     TIMEOUT,
+    SyncAuthProvider,
     ConnhexClient,
     SyncTokenProvider,
 )
@@ -49,8 +50,10 @@ class Connhex:
 
     - `token`: a static bearer token (personal access token). If omitted,
       the `CONNHEX_BEARER_TOKEN` environment variable is used.
-    - `token_provider`: sync callable returning a fresh token on every
-      request — for multi-user servers or short-lived tokens.
+    - `token_provider`: sync callable returning a fresh bearer token on every
+    request — for multi-user servers or short-lived tokens.
+    - `auth_provider`: sync callable returning bearer or session-cookie
+    credentials on every request.
 
     `instance_url` falls back to the `CONNHEX_INSTANCE_URL` environment
     variable when omitted, then to the Connhex SaaS instance at
@@ -69,9 +72,11 @@ class Connhex:
             `"https://your-tenant.connhex.com"`. Falls back to
             `$CONNHEX_INSTANCE_URL`, then `https://connhex.com`.
         token: Static bearer token. Falls back to `$CONNHEX_BEARER_TOKEN`.
-            Mutually exclusive with `token_provider`.
+            Mutually exclusive with `token_provider` and `auth_provider`.
         token_provider: Sync callable resolving a bearer token per request.
-            Mutually exclusive with `token`.
+            Mutually exclusive with `token` and `auth_provider`.
+        auth_provider: Sync callable resolving bearer or session-cookie auth
+            per request. Mutually exclusive with `token` and `token_provider`.
         timeout: Default per-request timeout in seconds.
         max_retries: Max retries for transient failures (0 disables).
     """
@@ -82,6 +87,7 @@ class Connhex:
         instance_url: str | None = None,
         token: str | None = None,
         token_provider: SyncTokenProvider | None = None,
+        auth_provider: SyncAuthProvider | None = None,
         timeout: float = TIMEOUT,
         max_retries: int = MAX_RETRIES,
     ) -> None:
@@ -90,13 +96,14 @@ class Connhex:
             or os.environ.get(ENV_INSTANCE_URL)
             or DEFAULT_INSTANCE_URL
         )
-        if token is None and token_provider is None:
+        if token is None and token_provider is None and auth_provider is None:
             token = os.environ.get(ENV_TOKEN)
 
         self._http = ConnhexClient(
             instance_url=instance_url,
             token=token,
             token_provider=token_provider,
+            auth_provider=auth_provider,
             timeout=timeout,
             max_retries=max_retries,
         )

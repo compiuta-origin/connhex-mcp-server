@@ -27,6 +27,7 @@ TARGET_DIR = os.path.join(
 TOKEN_REPLACEMENTS = {
     "AsyncConnhex": "Connhex",
     "TokenProvider": "SyncTokenProvider",
+    "AuthProvider": "SyncAuthProvider",
     "AsyncClient": "Client",
     "aclose": "close",
     "__aenter__": "__enter__",
@@ -47,6 +48,7 @@ BANNER = """\
 
 SUBSTRING_REPLACEMENTS = [
     ("Awaitable[str]", "str"),
+    ("Awaitable[Auth]", "Auth"),
     (
         "from asyncio import sleep as _sleep",
         "from time import sleep as _sleep",

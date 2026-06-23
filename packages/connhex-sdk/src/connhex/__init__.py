@@ -6,6 +6,7 @@ except PackageNotFoundError:
     __version__ = "0.0.0+unknown"
 
 from connhex.aio._client import AsyncConnhex  # noqa: E402
+from connhex.auth import BearerAuth, SessionCookieAuth  # noqa: E402
 from connhex.errors import (  # noqa: E402
     APIConnectionError,
     APITimeoutError,
@@ -25,6 +26,7 @@ __all__ = [
     "APIConnectionError",
     "APITimeoutError",
     "AsyncConnhex",
+    "BearerAuth",
     "AuthenticationError",
     "ConflictError",
     "Connhex",
@@ -34,6 +36,7 @@ __all__ = [
     "NotFoundError",
     "PermissionDeniedError",
     "RateLimitError",
+    "SessionCookieAuth",
     "UnprocessableEntityError",
     "__version__",
 ]

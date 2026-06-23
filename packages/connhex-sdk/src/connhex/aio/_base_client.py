@@ -7,6 +7,7 @@ from typing import Awaitable, Callable
 import httpx
 
 from connhex import __version__
+from connhex.auth import Auth, BearerAuth, SessionCookieAuth
 from connhex.errors import (
     APIConnectionError,
     APITimeoutError,
@@ -22,6 +23,7 @@ RETRY_JITTER = 0.25
 RETRY_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
 
 TokenProvider = Callable[[], Awaitable[str]]
+AuthProvider = Callable[[], Awaitable[Auth]]
 
 
 def _retry_after_seconds(resp: httpx.Response) -> float | None:
@@ -45,9 +47,8 @@ def _retry_after_seconds(resp: httpx.Response) -> float | None:
 class ConnhexClient:
     """HTTP client for the Connhex API.
 
-    Auth is provided either as a static `token` or, for callers that need
-    per-request token resolution (e.g. multi-user servers), a
-    `token_provider` callable invoked on every request.
+    Auth is provided with a static `token`, a per-request `token_provider`,
+    or an `auth_provider` that resolves either bearer or session-cookie auth.
 
     Transient failures (network errors and HTTP 429/5xx) are retried with
     exponential backoff + jitter, honoring `Retry-After` when present.
@@ -60,18 +61,17 @@ class ConnhexClient:
         instance_url: str,
         token: str | None = None,
         token_provider: TokenProvider | None = None,
+        auth_provider: AuthProvider | None = None,
         timeout: float = TIMEOUT,
         max_retries: int = MAX_RETRIES,
         retry_initial: float = RETRY_INITIAL,
         retry_cap: float = RETRY_CAP,
     ):
-        if (token is None) == (token_provider is None):
-            raise ValueError(
-                "exactly one of `token` or `token_provider` is required"
-            )
+        self._validate_auth(token, token_provider, auth_provider)
         self.instance_url = instance_url.rstrip("/")
         self._token = token
         self._token_provider = token_provider
+        self._auth_provider = auth_provider
         self._max_retries = max_retries
         self._retry_initial = retry_initial
         self._retry_cap = retry_cap
@@ -83,11 +83,38 @@ class ConnhexClient:
             follow_redirects=True,
         )
 
-    async def _token_value(self) -> str:
+    def _validate_auth(
+        self,
+        token: str | None,
+        token_provider: TokenProvider | None,
+        auth_provider: AuthProvider | None,
+    ) -> None:
+        if (
+            sum(
+                value is not None
+                for value in (token, token_provider, auth_provider)
+            )
+            != 1
+        ):
+            raise ValueError(
+                "exactly one of `token`, `token_provider`, or `auth_provider` is required"
+            )
+
+    async def _auth_headers(self) -> dict[str, str]:
+        if self._auth_provider is not None:
+            auth = await self._auth_provider()
+            if isinstance(auth, BearerAuth):
+                return {"Authorization": f"Bearer {auth.token}"}
+            if isinstance(auth, SessionCookieAuth):
+                return {"Cookie": f"chx_auth_session={auth.value}"}
+            raise TypeError(f"unsupported authentication credential: {auth!r}")
+
         if self._token_provider is not None:
-            return await self._token_provider()
-        assert self._token is not None
-        return self._token
+            token = await self._token_provider()
+        else:
+            assert self._token is not None
+            token = self._token
+        return {"Authorization": f"Bearer {token}"}
 
     def _backoff(self, attempt: int) -> float:
         delay = min(self._retry_initial * (2**attempt), self._retry_cap)
@@ -104,11 +131,10 @@ class ConnhexClient:
         **kwargs,
     ) -> httpx.Response:
         url = f"{build_url(self.instance_url, base)}{path}"
-        token = await self._token_value()
         headers = {
             "Accept": "application/json",
-            "Authorization": f"Bearer {token}",
             "User-Agent": self._user_agent,
+            **await self._auth_headers(),
             **(extra_headers or {}),
         }
         if timeout is not None:

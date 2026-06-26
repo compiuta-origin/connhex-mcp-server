@@ -162,3 +162,16 @@ def test_user_agent_header_set(monkeypatch):
     assert seen["ua"].startswith("connhex-python/")
     assert "httpx/" in seen["ua"]
     client.close()
+
+
+def test_query_params_encode_spaces_as_percent_20(monkeypatch):
+    seen: dict[str, bytes] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["query"] = request.url.query
+        return httpx.Response(200, json={"ok": True})
+
+    client, _ = _make_client(monkeypatch, handler)
+    client.request("GET", "/x", params={"filter[name]": "COMPIUTA 1"})
+    assert seen["query"] == b"filter%5Bname%5D=COMPIUTA%201"
+    client.close()

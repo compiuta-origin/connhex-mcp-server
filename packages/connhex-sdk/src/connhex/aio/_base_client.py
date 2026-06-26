@@ -3,6 +3,7 @@ from asyncio import sleep as _sleep
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Awaitable, Callable
+from urllib.parse import quote, urlencode
 
 import httpx
 
@@ -42,6 +43,13 @@ def _retry_after_seconds(resp: httpx.Response) -> float | None:
         return max(0.0, (when - datetime.now(timezone.utc)).total_seconds())
     except (TypeError, ValueError):
         return None
+
+
+def _append_query_params(url: str, params: dict) -> str:
+    query = urlencode(params, doseq=True, quote_via=quote)
+    if not query:
+        return url
+    return f"{url}{'&' if '?' in url else '?'}{query}"
 
 
 class ConnhexClient:
@@ -131,6 +139,9 @@ class ConnhexClient:
         **kwargs,
     ) -> httpx.Response:
         url = f"{build_url(self.instance_url, base)}{path}"
+        params = kwargs.pop("params", None)
+        if params:
+            url = _append_query_params(url, params)
         headers = {
             "Accept": "application/json",
             "User-Agent": self._user_agent,

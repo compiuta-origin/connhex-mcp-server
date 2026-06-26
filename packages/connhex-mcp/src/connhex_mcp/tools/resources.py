@@ -30,6 +30,19 @@ Args:
             {{"site:name": {{"fuzzy-match": "Plant"}}}}    → related-resource property (colon)
             {{"or": {{"name": {{"fuzzy-match": "x"}},
                     "serial": {{"fuzzy-match": "x"}}}}}}   → OR across fields
+        NOTE: do not filter a relationship directly by its resource ID (for example,
+        {{"installation": "<installation-id>"}} is not supported). Relationship
+        filters must end in an actual attribute from the related resource, such
+        as {{"installation:name": "Plant A"}}. When only a related resource ID
+        is known, first call `get_resource` for it, extract a suitable attribute,
+        then call `list_resources` with a `relationship:attribute` filter. For
+        example: get the installation by ID, read its `name`, then list devices
+        with {{"installation:name": "<installation-name>"}}.
+        A relation path is one literal, flat dict key: use
+        {{"installation:name": "Plant A"}}, never nest it as
+        {{"installation": {{"name": "Plant A"}}}}. To verify that a match belongs
+        to a specific related resource ID, set `include` to the relationship
+        name (for example, `include="installation"`) and compare its returned ID.
         Operators: match (default, can be omitted), fuzzy-match, min, max, exists.
         Combinators: and (default), or — top-level only, cannot be mixed.
         Field names come from the schema resource (see below).

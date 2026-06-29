@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Annotated, Callable
 
 from connhex.aio.services.resources import ResourcesService
 from connhex.schemas.resources import ListResponse, Resource
@@ -9,106 +9,118 @@ from connhex_mcp.mcp_instance import mcp
 from connhex_mcp.resources.schemas import SCHEMA_DESCRIPTION
 
 _SCHEMA_HINT = (
-    "\nCall the `get_schema` tool first to discover valid resource types, "
-    "attributes, and relationships.\n"
+    "\nIf available, call the `get_schema` tool first to discover valid "
+    "resource types, attributes, and relationships.\n"
 )
 
-LIST_DOC = f"""
-List resources of a given type from a Connhex JSON:API service.
+FILTER_DESCRIPTION = """
+JSON:API filter tree. The dict is walked recursively and translated into
+`filter[...][...]=value` query params. Examples:
+    {"serial": "ABC"}                          → exact match (default)
+    {"serial": ["A", "B"]}                     → match any of A or B
+    {"serial": {"fuzzy-match": "ABC"}}         → case-insensitive prefix
+    {"createdAt": {"min": "2024-01-01",
+                   "max": "2024-12-31"}}        → range
+    {"site": {"exists": True}}                 → presence check
+    {"address.city": "Milan"}                  → object property (dot)
+    {"site:name": {"fuzzy-match": "Plant"}}    → related-resource property (colon)
+    {"or": {"name": {"fuzzy-match": "x"},
+            "serial": {"fuzzy-match": "x"}}}   → OR across fields
 
-Args:
-    resource_type: The resource type name (e.g., "devices", "plants").
-    filter: JSON:API filter tree. The dict is walked recursively and
-        translated into `filter[...][...]=value` query params. Examples:
-            {{"serial": "ABC"}}                          → exact match (default)
-            {{"serial": ["A", "B"]}}                     → match any of A or B
-            {{"serial": {{"fuzzy-match": "ABC"}}}}         → case-insensitive prefix
-            {{"createdAt": {{"min": "2024-01-01",
-                           "max": "2024-12-31"}}}}        → range
-            {{"site": {{"exists": True}}}}                → presence check
-            {{"address.city": "Milan"}}                  → object property (dot)
-            {{"site:name": {{"fuzzy-match": "Plant"}}}}    → related-resource property (colon)
-            {{"or": {{"name": {{"fuzzy-match": "x"}},
-                    "serial": {{"fuzzy-match": "x"}}}}}}   → OR across fields
-        NOTE: do not filter a relationship directly by its resource ID (for example,
-        {{"installation": "<installation-id>"}} is not supported). Relationship
-        filters must end in an actual attribute from the related resource, such
-        as {{"installation:name": "Plant A"}}. When only a related resource ID
-        is known, first call `get_resource` for it, extract a suitable attribute,
-        then call `list_resources` with a `relationship:attribute` filter. For
-        example: get the installation by ID, read its `name`, then list devices
-        with {{"installation:name": "<installation-name>"}}.
-        A relation path is one literal, flat dict key: use
-        {{"installation:name": "Plant A"}}, never nest it as
-        {{"installation": {{"name": "Plant A"}}}}. To verify that a match belongs
-        to a specific related resource ID, set `include` to the relationship
-        name (for example, `include="installation"`) and compare its returned ID.
-        Operators: match (default, can be omitted), fuzzy-match, min, max, exists.
-        Combinators: and (default), or — top-level only, cannot be mixed.
-        Field names come from the schema resource (see below).
-    sort: Comma-separated fields. Prefix with "-" for descending.
-    include: Comma-separated related resources to include inline. When set,
-        the response's relationship references are replaced with the full
-        nested resources from `included`.
-    fields: Sparse fieldsets, mapping resource type → comma-separated field
-        names (e.g. {{"devices": "serial,name"}}). Use this aggressively to
-        keep responses small.
-    page_limit: Number of results per page (default 25).
-    page_offset: Offset for pagination.
+NOTE: do not filter a relationship directly by its resource ID (for example,
+{"installation": "<installation-id>"} is not supported). Relationship filters
+must end in an actual attribute from the related resource, such as
+{"installation:name": "Plant A"}. When only a related resource ID is known,
+first call `get_resource` for it, extract a suitable attribute, then call
+`list_resources` with a `relationship:attribute` filter. For example: get the
+installation by ID, read its `name`, then list devices with
+{"installation:name": "<installation-name>"}.
+
+A relation path is one literal, flat dict key: use {"installation:name": "Plant A"},
+never nest it as {"installation": {"name": "Plant A"}}.
+To verify that a match belongs to a specific related resource ID,
+set `include` to the relationship name (for example, `include="installation"`)
+and compare its returned ID.
+
+Operators: match (default, can be omitted), fuzzy-match, min, max, exists.
+Combinators: and (default), or — top-level only, cannot be mixed.
+Field names come from the schema resource.
+"""
+
+ResourceType = Annotated[
+    str,
+    'Resource type name from get_schema, e.g. "devices" or "plants".',
+]
+ResourceId = Annotated[str, "Resource ID."]
+Filter = Annotated[dict | None, FILTER_DESCRIPTION]
+Sort = Annotated[
+    str | None,
+    'Comma-separated sort fields. Prefix a field with "-" for descending.',
+]
+Include = Annotated[
+    str | None,
+    "Comma-separated relationship names to include inline. Use this whenever "
+    "the answer needs data from related resources: it replaces relationship "
+    "references with full nested included resources and avoids a second API "
+    'call.\nExample: to find devices for an installation, call resource_type="devices", '
+    'filter={"installation:name": "Plant A"}, include="installation" so each '
+    "device result includes the matched installation details.",
+]
+PageLimit = Annotated[int, "Number of results per page."]
+PageOffset = Annotated[int, "Pagination offset."]
+Attributes = Annotated[
+    dict,
+    "Resource attributes payload. Field names must come from get_schema.",
+]
+Relationships = Annotated[
+    dict | None,
+    "Optional JSON:API relationships payload.",
+]
+
+LIST_DOC = f"""
+List resources of a given type from a JSON:API service.
+
+Supports filtering, sorting, relationship includes, and
+pagination. Argument details are provided in the parameter schema.
 {_SCHEMA_HINT}"""
 
 GET_DOC = f"""
-Get a specific resource by its ID from a Connhex JSON:API service.
+Get a specific resource by its ID from a JSON:API service.
 
-Args:
-    resource_type: The resource type name.
-    resource_id: The resource's unique ID.
-    include: Comma-separated related resources to include inline.
+Use `include` when related resources should be returned inline.
 {_SCHEMA_HINT}"""
 
 CREATE_DOC = f"""
 Create a new resource on a Connhex JSON:API service.
 
-Args:
-    resource_type: The resource type name.
-    attributes: Dict of attribute values for the new resource.
-    relationships: Optional dict of JSON:API relationships.
+Use schema fields for attributes and relationships.
 {_SCHEMA_HINT}"""
 
 UPDATE_DOC = f"""
 Update an existing resource's attributes (partial update).
 
-Args:
-    resource_type: The resource type name.
-    resource_id: The resource's unique ID.
-    attributes: Dict of attribute values to update.
+Use schema fields for attributes. Only provided attributes are changed.
 {_SCHEMA_HINT}"""
 
 DELETE_DOC = f"""
 Delete a resource. This action is irreversible.
-
-Args:
-    resource_type: The resource type name.
-    resource_id: The resource's unique ID.
 {_SCHEMA_HINT}"""
 
 
 async def _list_resources(
     service: ResourcesService,
-    resource_type: str,
-    filter: dict | None = None,
-    sort: str | None = None,
-    include: str | None = None,
-    fields: dict | None = None,
-    page_limit: int = 25,
-    page_offset: int = 0,
+    resource_type: ResourceType,
+    filter: Filter = None,
+    sort: Sort = None,
+    include: Include = None,
+    page_limit: PageLimit = 25,
+    page_offset: PageOffset = 0,
 ) -> ListResponse[Resource]:
     return await service.list(
         resource_type=resource_type,
         filter=filter,
         sort=sort,
         include=include,
-        fields=fields,
         page_limit=page_limit,
         page_offset=page_offset,
     )
@@ -116,9 +128,9 @@ async def _list_resources(
 
 async def _get_resource(
     service: ResourcesService,
-    resource_type: str,
-    resource_id: str,
-    include: str | None = None,
+    resource_type: ResourceType,
+    resource_id: ResourceId,
+    include: Include = None,
 ) -> Resource:
     return await service.get(
         resource_type=resource_type,
@@ -129,9 +141,9 @@ async def _get_resource(
 
 async def _create_resource(
     service: ResourcesService,
-    resource_type: str,
-    attributes: dict,
-    relationships: dict | None = None,
+    resource_type: ResourceType,
+    attributes: Attributes,
+    relationships: Relationships = None,
 ) -> Resource:
     payload = {
         "data": {
@@ -147,9 +159,9 @@ async def _create_resource(
 
 async def _update_resource(
     service: ResourcesService,
-    resource_type: str,
-    resource_id: str,
-    attributes: dict,
+    resource_type: ResourceType,
+    resource_id: ResourceId,
+    attributes: Attributes,
 ) -> Resource:
     payload = {
         "data": {
@@ -163,8 +175,8 @@ async def _update_resource(
 
 async def _delete_resource(
     service: ResourcesService,
-    resource_type: str,
-    resource_id: str,
+    resource_type: ResourceType,
+    resource_id: ResourceId,
 ) -> str:
     await service.delete(resource_type, resource_id)
     return f"Resource {resource_id} of type '{resource_type}' deleted successfully."
@@ -176,13 +188,12 @@ def _register_jsonapi_tools(
     title_prefix: str,
 ) -> None:
     async def list_op(
-        resource_type: str,
-        filter: dict | None = None,
-        sort: str | None = None,
-        include: str | None = None,
-        fields: dict | None = None,
-        page_limit: int = 25,
-        page_offset: int = 0,
+        resource_type: ResourceType,
+        filter: Filter = None,
+        sort: Sort = None,
+        include: Include = None,
+        page_limit: PageLimit = 25,
+        page_offset: PageOffset = 0,
     ) -> ListResponse[Resource]:
         return await _list_resources(
             service=service_getter(),
@@ -190,15 +201,14 @@ def _register_jsonapi_tools(
             filter=filter,
             sort=sort,
             include=include,
-            fields=fields,
             page_limit=page_limit,
             page_offset=page_offset,
         )
 
     async def get_op(
-        resource_type: str,
-        resource_id: str,
-        include: str | None = None,
+        resource_type: ResourceType,
+        resource_id: ResourceId,
+        include: Include = None,
     ) -> Resource:
         return await _get_resource(
             service=service_getter(),
@@ -208,9 +218,9 @@ def _register_jsonapi_tools(
         )
 
     async def create_op(
-        resource_type: str,
-        attributes: dict,
-        relationships: dict | None = None,
+        resource_type: ResourceType,
+        attributes: Attributes,
+        relationships: Relationships = None,
     ) -> Resource:
         return await _create_resource(
             service=service_getter(),
@@ -220,9 +230,9 @@ def _register_jsonapi_tools(
         )
 
     async def update_op(
-        resource_type: str,
-        resource_id: str,
-        attributes: dict,
+        resource_type: ResourceType,
+        resource_id: ResourceId,
+        attributes: Attributes,
     ) -> Resource:
         return await _update_resource(
             service=service_getter(),
@@ -232,8 +242,8 @@ def _register_jsonapi_tools(
         )
 
     async def delete_op(
-        resource_type: str,
-        resource_id: str,
+        resource_type: ResourceType,
+        resource_id: ResourceId,
     ) -> str:
         return await _delete_resource(
             service=service_getter(),

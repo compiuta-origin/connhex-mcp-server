@@ -15,17 +15,17 @@ from connhex_mcp.mcp_instance import mcp
 Limit = Annotated[int, "Max messages to return (upstream max is 1500)."]
 Offset = Annotated[int, "Pagination offset."]
 FromS = Annotated[
-    float | None,
-    "Start time in Unix epoch seconds. Always provide from_s and to_s together "
-    "when the requested time range is known; this drastically speeds up database "
-    "queries. The integer part represents whole seconds; "
+    float,
+    "Required start time in Unix epoch seconds. Always provide a bounded range "
+    "together with to_s; narrow time ranges prevent slow database queries and "
+    "timeouts. The integer part represents whole seconds; "
     "the fractional part provides sub-second precision (e.g. 1744243200.183767).",
 ]
 ToS = Annotated[
-    float | None,
-    "End time in Unix epoch seconds. Always provide from_s and to_s together "
-    "when the requested time range is known; this drastically speeds up database "
-    "queries. The integer part represents whole seconds; "
+    float,
+    "Required end time in Unix epoch seconds. Always provide a bounded range "
+    "together with from_s; narrow time ranges prevent slow database queries and "
+    "timeouts. The integer part represents whole seconds; "
     "the fractional part provides sub-second precision (e.g. 1744243200.183767).",
 ]
 Publisher = Annotated[str | None, "Publisher UUID filter."]
@@ -107,10 +107,10 @@ async def _read_channel_messages(
 )
 async def read_channel_messages(
     channel_id: Annotated[str, "UUID of the channel."],
-    limit: Limit = 100,
+    from_s: FromS,
+    to_s: ToS,
+    limit: Limit = 10,
     offset: Offset = 0,
-    from_s: FromS = None,
-    to_s: ToS = None,
     publisher: Publisher = None,
     name: Name = None,
     format: Format = "messages",
@@ -153,10 +153,10 @@ async def read_thing_messages(
         "This is the value of the Connhex ID field on the resource "
         "or manufacturing record — not the resource's own id.",
     ],
-    limit: Limit = 100,
+    from_s: FromS,
+    to_s: ToS,
+    limit: Limit = 10,
     offset: Offset = 0,
-    from_s: FromS = None,
-    to_s: ToS = None,
     publisher: Publisher = None,
     name: Name = None,
     format: Format = "messages",
